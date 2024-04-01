@@ -4,7 +4,7 @@ resource "random_integer" "wn_vm_id" {
 }
 
 resource "proxmox_vm_qemu" "worker" {
-  name        = "worker"
+  name        = "worker-${random_integer.wn_vm_id.result}"
   target_node = "pve01"
   iso         = var.worker_iso
   vmid        = random_integer.wn_vm_id.result

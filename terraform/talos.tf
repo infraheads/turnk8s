@@ -30,12 +30,6 @@ resource "talos_machine_configuration_apply" "cp_mca" {
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.cp_mc.machine_configuration
   node                        = data.local_file.cp_ip.content
-
-#  lifecycle {
-#    ignore_changes = [
-#      machine_configuration_input
-#    ]
-#  }
 }
 
 # Bootstraps the etcd cluster on the control plane
@@ -75,10 +69,4 @@ resource "talos_machine_configuration_apply" "worker_mca" {
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_mc.machine_configuration
   node                        = data.local_file.wn_ip.content
-
-  lifecycle {
-    ignore_changes = [
-      machine_configuration_input
-    ]
-  }
 }
