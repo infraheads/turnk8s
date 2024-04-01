@@ -1,5 +1,12 @@
 terraform {
   required_version = ">= 1.7"
+  cloud {
+    organization = "infraheads"
+
+    workspaces {
+      name = "talos-proxmox-ws"
+    }
+  }
 
   required_providers {
     proxmox = {
