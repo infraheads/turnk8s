@@ -22,6 +22,11 @@ variable "ssh_key_path" {
   default = "~/.ssh/id_rsa"
 }
 
+variable "cluster_name" {
+  description = "The name of the cluster."
+  type = string
+}
+
 # ControlPlane variables
 variable "controlplane_iso" {
   description = "The name of the ISO image to mount to the VM."
@@ -96,6 +101,12 @@ variable "controlplane_disk_size" {
 }
 
 # Node variables
+variable "worker_nodes_count" {
+  description = "Count of the Worker Nodes."
+  type = number
+  default = 1
+}
+
 variable "worker_iso" {
   description = "The name of the ISO image to mount to the VM."
   type        = string

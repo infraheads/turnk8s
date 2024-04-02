@@ -4,7 +4,7 @@ resource "random_integer" "cp_vm_id" {
 }
 
 resource "proxmox_vm_qemu" "controlplane" {
-  name        = "cp-${random_integer.cp_vm_id.result}"
+  name        = "${var.cluster_name}-cp-${random_integer.cp_vm_id.result}"
   target_node = "pve01"
   iso         = var.controlplane_iso
   vmid        = random_integer.cp_vm_id.result
