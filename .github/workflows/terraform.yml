@@ -32,14 +32,9 @@ jobs:
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: fmt
-      id: fmt
-      run: terraform fmt -check
-      continue-on-error: true
-
     - name: Select workspace
       id: workspace
-      run: terraform workspace select ${{ inputs.cluster_name }} --or-create=
+      run: terraform workspace select ${{ inputs.cluster_name }} --or-create=true
 
     - name: Init
       id: init
