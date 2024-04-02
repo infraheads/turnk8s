@@ -18,6 +18,9 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform"
     env:
       TF_VAR_proxmox_ip: "${{ secrets.PROXMOX_IP }}"
       TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
