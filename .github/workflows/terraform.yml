@@ -34,7 +34,7 @@ jobs:
 
     - name: Select workspace
       id: workspace
-      run: terraform workspace select ${{ inputs.cluster_name }} --or-create=true
+      run: terraform workspace --or-create=true select ${{ inputs.cluster_name }}
 
     - name: Init
       id: init
