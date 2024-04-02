@@ -16,12 +16,6 @@ variable "proxmox_token_secret" {
   nullable = false
 }
 
-variable "ssh_key_path" {
-  description = "SSH key to connect to the Proxmox server"
-  type = string
-  default = "~/.ssh/id_rsa"
-}
-
 variable "cluster_name" {
   description = "The name of the cluster."
   type = string

@@ -46,7 +46,7 @@ resource "null_resource" "worker" {
 
   depends_on = [proxmox_vm_qemu.worker]
   provisioner "local-exec" {
-    command = "sh ../scripts/get_ip.sh ${var.ssh_key_path} ${var.proxmox_ip} ${proxmox_vm_qemu.worker[count.index].vmid} ${local.wn_ip_filename}"
+    command = "sh ../scripts/get_ip.sh ${local.proxmox_ssh_key_path} ${var.proxmox_ip} ${proxmox_vm_qemu.worker[count.index].vmid} ${local.wn_ip_filename}"
   }
 }
 
