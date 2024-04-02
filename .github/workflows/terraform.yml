@@ -33,13 +33,13 @@ jobs:
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Select workspace
-      id: workspace
-      run: terraform workspace select --or-create ${{ inputs.cluster_name }}
-
     - name: Init
       id: init
       run: terraform init
+
+    - name: Select workspace
+      id: workspace
+      run: terraform workspace select --or-create ${{ inputs.cluster_name }}
 
     - name: Validate
       id: validate
