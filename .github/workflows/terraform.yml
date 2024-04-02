@@ -15,7 +15,6 @@ env:
 
 jobs:
   terraform:
-    name: "Terraform"
     runs-on: self-hosted
     permissions:
       contents: read

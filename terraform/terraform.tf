@@ -1,10 +1,11 @@
 terraform {
   required_version = ">= 1.7"
-  cloud {
+  backend "remote" {
+    hostname = "app.terraform.io"
     organization = "infraheads"
 
     workspaces {
-      name = "talos-proxmox-ws"
+      prefix = "talos-proxmox-"
     }
   }
 
