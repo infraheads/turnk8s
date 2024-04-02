@@ -22,10 +22,10 @@ jobs:
       contents: read
       pull-requests: write
     env:
-      TF_VAR_proxmox_ip="\"${{ secrets.PROXMOX_IP }}\""
-      TF_VAR_proxmox_token_id="\"${{ secrets.PROXMOX_TOKEN_ID }}\""
-      TF_VAR_proxmox_token_secret="\"${{ secrets.PROXMOX_TOKEN_SECRET }}\""
-      TF_VAR_cluster_name="\"${{ inputs.cluster_name }}\""
+      TF_VAR_proxmox_ip="${{ secrets.PROXMOX_IP }}"
+      TF_VAR_proxmox_token_id="${{ secrets.PROXMOX_TOKEN_ID }}"
+      TF_VAR_proxmox_token_secret="${{ secrets.PROXMOX_TOKEN_SECRET }}"
+      TF_VAR_cluster_name="${{ inputs.cluster_name }}"
     steps:
     - name: Checkout
       uses: actions/checkout@v3
