@@ -12,11 +12,10 @@ env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_WORKSPACE: "talos-proxmox-ws"
-  CONFIG_DIRECTORY: "./"
 
 jobs:
   terraform:
-    name: "Terraform Plan"
+    name: "Terraform"
     runs-on: self-hosted
     permissions:
       contents: read
@@ -27,27 +26,67 @@ jobs:
       TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
       TF_VAR_cluster_name: "${{ inputs.cluster_name }}"
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Upload Configuration
-      uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
-      id: plan-upload
+    - uses: hashicorp/setup-terraform@v3
       with:
-        workspace: ${{ env.TF_WORKSPACE }}
-        directory: ${{ env.CONFIG_DIRECTORY }}
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Create Plan Run
-      uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
-      id: plan-run
-      with:
-        workspace: ${{ env.TF_WORKSPACE }}
-        configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
+    - name: fmt
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
 
-    - name: Apply
-      uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
-      if: fromJSON(steps.plan-run.outputs.payload).data.attributes.actions.IsConfirmable
-      id: apply
+    - name: Select workspace
+      id: workspace
+      run: terraform workspace select ${{ inputs.cluster_name }} --or-create=
+
+    - name: Init
+      id: init
+      run: terraform init
+
+    - name: Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Plan
+      id: plan
+      run: terraform plan -no-color
+      continue-on-error: true
+
+    - uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       with:
-        run: ${{ steps.plan-run.outputs.run_id }}
-        comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          <details><summary>Validation Output</summary>
+    
+          \`\`\`\n
+          ${{ steps.validate.outputs.stdout }}
+          \`\`\`
+    
+          </details>
+    
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+    
+          <details><summary>Show Plan</summary>
+    
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+    
+          </details>
+    
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+    
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
