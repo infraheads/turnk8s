@@ -51,7 +51,7 @@ resource "null_resource" "worker" {
 }
 
 data "local_file" "wn_ip" {
-  count = var.worker_nodes_count
+#  count = var.worker_nodes_count
 
   depends_on = [null_resource.worker]
   filename   = "${local.wn_ip_filename}" #TODO implement file names for multiple worker nodes
