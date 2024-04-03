@@ -11,7 +11,6 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_WORKSPACE: "default-ws"
 
 jobs:
   terraform:
@@ -34,13 +33,13 @@ jobs:
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Init
-      id: init
-      run: terraform init
-
     - name: Select workspace
       id: workspace
       run: terraform workspace new ${{ inputs.cluster_name }}
+
+    - name: Init
+      id: init
+      run: terraform init
 
     - name: Validate
       id: validate
