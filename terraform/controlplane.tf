@@ -40,7 +40,7 @@ resource "proxmox_vm_qemu" "controlplane" {
 resource "null_resource" "controlplane" {
   depends_on = [proxmox_vm_qemu.controlplane]
   provisioner "local-exec" {
-    command = "bash ../scripts/get_ip.sh ${local.proxmox_ssh_key_path} ${var.proxmox_ip} ${local.cp_ip_filename} ${join(" ", proxmox_vm_qemu.controlplane.*.vmid)}"
+    command = "bash ../scripts/get_cp_ip.sh ${local.proxmox_ssh_key_path} ${var.proxmox_ip} ${local.cp_ip_filename} ${proxmox_vm_qemu.controlplane.vmid}"
   }
 }
 
