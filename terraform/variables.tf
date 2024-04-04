@@ -61,7 +61,7 @@ variable "controlplane_scsihw" {
 variable "controlplane_memory" {
   description = "The amount of memory to allocate to the VM in Megabytes."
   type        = number
-  default     = 512
+  default     = 4096
 }
 
 variable "controlplane_network_bridge" {
@@ -140,7 +140,7 @@ variable "worker_scsihw" {
 variable "worker_memory" {
   description = "The amount of memory to allocate to the VM in Megabytes."
   type        = number
-  default     = 512
+  default     = 4096
 }
 
 variable "worker_network_bridge" {
