@@ -2,8 +2,8 @@
 
 ssh_key_path=$1
 proxmox_ip=$2
-vm_ids=$3
-output_file=$4
+output_file=$3
+vm_ids=("${@:4}")
 
 ssh -i $ssh_key_path root@$proxmox_ip  """
   for vm_id in ${vm_ids[@]}
