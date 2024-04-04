@@ -72,5 +72,11 @@ resource "talos_machine_configuration_apply" "worker_mca" {
 
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_mc[count.index].machine_configuration
-  node                        = data.local_file.wn_ip.content
+  node                        = try(
+    [
+      for line in split("\n", data.local_file.wn_ip.content):
+        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == random_integer.wn_vm_id[count.index].result
+    ][0],
+    null
+  )
 }

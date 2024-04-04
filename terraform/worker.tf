@@ -42,17 +42,13 @@ resource "proxmox_vm_qemu" "worker" {
 }
 
 resource "null_resource" "worker" {
-  count = var.worker_nodes_count
-
   depends_on = [proxmox_vm_qemu.worker]
   provisioner "local-exec" {
-    command = "sh ../scripts/get_ip.sh ${local.proxmox_ssh_key_path} ${var.proxmox_ip} ${proxmox_vm_qemu.worker[count.index].vmid} ${local.wn_ip_filename}"
+    command = "sh ../scripts/get_ip.sh ${local.proxmox_ssh_key_path} ${var.proxmox_ip} ${proxmox_vm_qemu.worker.*.vmid} ${local.wn_ip_filename}"
   }
 }
 
 data "local_file" "wn_ip" {
-#  count = var.worker_nodes_count
-
   depends_on = [null_resource.worker]
-  filename   = "${local.wn_ip_filename}" #TODO implement file names for multiple worker nodes
+  filename   = "${local.wn_ip_filename}"
 }
