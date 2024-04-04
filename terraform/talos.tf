@@ -16,7 +16,7 @@ data "talos_machine_configuration" "cp_mc" {
 # Generates client configuration for a Talos cluster (talosconfig)
 data "talos_client_configuration" "cp_cc" {
   depends_on           = [data.local_file.cp_ip]
-  cluster_name         = "${var.cluster_name}-cp-${random_integer.cp_vm_id.result}"
+  cluster_name         = data.talos_machine_configuration.cp_mc.cluster_name
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
   nodes                = [data.local_file.cp_ip.content]
   endpoints            = [data.local_file.cp_ip.content]
@@ -55,9 +55,9 @@ data "talos_cluster_kubeconfig" "cp_ck" {
 data "talos_machine_configuration" "worker_mc" {
   count = var.worker_nodes_count
 
-  cluster_name       = "${var.cluster_name}-worker_${count.index}-${random_integer.wn_vm_id[count.index].result}"
+  cluster_name       = "${var.cluster_name}-worker-${count.index}-${random_integer.wn_vm_id[count.index].result}"
   machine_type       = "worker"
-  cluster_endpoint   = "https://${data.local_file.cp_ip.content}:6443"
+  cluster_endpoint   = data.talos_machine_configuration.cp_mc.cluster_endpoint
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.kubernetes_version
   talos_version      = local.talos_version

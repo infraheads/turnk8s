@@ -8,7 +8,7 @@ resource "random_integer" "wn_vm_id" {
 resource "proxmox_vm_qemu" "worker" {
   count = var.worker_nodes_count
 
-  name        = "${var.cluster_name}-worker_${count.index}-${random_integer.wn_vm_id[count.index].result}"
+  name        = "${var.cluster_name}-worker-${count.index}-${random_integer.wn_vm_id[count.index].result}"
   target_node = "pve01"
   iso         = var.worker_iso
   vmid        = random_integer.wn_vm_id[count.index].result
