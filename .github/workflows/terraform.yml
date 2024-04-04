@@ -36,6 +36,8 @@ jobs:
     - name: Init
       id: init
       run: terraform init
+      env:
+        TF_WORKSPACE: "default-ws"
 
     - name: Select workspace
       id: workspace
