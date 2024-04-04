@@ -7,6 +7,41 @@ on:
         description: 'A unique Cluster name'
         required: true
         type: string
+      controlplane_cpu_cores:
+        description: 'CPU cores count of the ControlPlane'
+        required: true
+        type: number
+        default: 2
+      controlplane_memory:
+        description: 'RAM memory of the ControlPlane'
+        required: true
+        type: number
+        default: 4096
+      controlplane_disk_size:
+        description: 'Disk size of the ControlPlane'
+        required: true
+        type: number
+        default: 32
+      worker_nodes_count:
+        description: 'Count of the Worker Nodes'
+        required: true
+        type: number
+        default: 1
+      worker_cpu_cores:
+        description: 'CPU cores count of the Worker Node'
+        required: true
+        type: number
+        default: 2
+      worker_memory:
+        description: 'RAM memory of the Worker Node'
+        required: true
+        type: number
+        default: 4096
+      worker_disk_size:
+        description: 'Disk size of the Worker Node'
+        required: true
+        type: number
+        default: 32
 
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
@@ -26,6 +61,13 @@ jobs:
       TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
       TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
       TF_VAR_cluster_name: "${{ inputs.cluster_name }}"
+      TF_VAR_controlplane_cores: "${{ inputs.controlplane_cpu_cores }}"
+      TF_VAR_controlplane_memory: "${{ inputs.controlplane_memory }}"
+      TF_VAR_controlplane_disk_size: "${{ inputs.controlplane_disk_size }}"
+      TF_VAR_worker_nodes_count: "${{ inputs.worker_nodes_count }}"
+      TF_VAR_worker_cores: "${{ inputs.worker_cpu_cores }}"
+      TF_VAR_worker_memory: "${{ inputs.worker_memory }}"
+      TF_VAR_worker_disk_size: "${{ inputs.worker_disk_size }}"
     steps:
     - uses: actions/checkout@v4
 
