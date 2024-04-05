@@ -96,3 +96,9 @@ jobs:
     - name: Apply
       id: apply
       run: terraform apply tfplan
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: my-artifact
+        path: output.txt
