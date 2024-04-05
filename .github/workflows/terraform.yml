@@ -100,5 +100,5 @@ jobs:
     - name: Upload test file as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: my-artifact
+        name: kube-config
         path: /tmp/kube-config
