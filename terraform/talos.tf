@@ -65,17 +65,17 @@ data "talos_machine_configuration" "worker_mc" {
 
 # Applies machine configuration to the worker node
 resource "talos_machine_configuration_apply" "worker_mca" {
+  count = var.worker_nodes_count
   depends_on = [
     proxmox_vm_qemu.worker
   ]
-  count = var.worker_nodes_count
 
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_mc[count.index].machine_configuration
   node                        = try(
     [
       for line in split("\n", data.local_file.wn_ip.content):
-        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == random_integer.wn_vm_id[count.index].result
+        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(random_integer.wn_vm_id[count.index].result)
     ][0],
     null
   )
