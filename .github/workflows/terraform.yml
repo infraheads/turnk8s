@@ -97,8 +97,13 @@ jobs:
       id: apply
       run: terraform apply tfplan
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
+    - name: Upload test file as artifact
+      uses: actions/upload-artifact@v3
       with:
         name: my-artifact
-        path: output.txt
+        path: /tmp/test
+
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: my-artifact
