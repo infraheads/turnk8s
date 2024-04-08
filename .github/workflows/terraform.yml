@@ -87,9 +87,11 @@ jobs:
         set +e # allow the workflow to continue following steps even if the `terraform` execution failed
         terraform workspace new ${{ inputs.cluster_name }} 1>stdout 2>stderr
         tf_exitcode=$?
-        echo "::set-output name=exitcode::$tf_exitcode"
-        echo "::set-output name=stdout::$(cat ./stdout)"
-        echo "::set-output name=stderr::$(cat ./stderr)"
+        set -e  # Re-enable exit-on-error
+        if [ $tf_exitcode -ne 0 ]; then
+          echo "There is already a cluster with the name '${{ inputs.cluster_name }}'. The cluster name MUST BE unique."
+          exit 1  # Mark the step as failed
+        fi
       
     - name: Validate
       id: validate
