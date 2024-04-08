@@ -59,7 +59,7 @@ jobs:
         run: |
           # Destroy Kubernetes Cluster
           terraform destroy -auto-approve \
-          -var="cluster_name=${{ inputs.cluster_name }}
+          -var="cluster_name=${{ inputs.cluster_name }}"
 
       - name: Destroy Terraform Cloud Workspace
         run: |
