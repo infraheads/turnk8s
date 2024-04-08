@@ -1,6 +1,6 @@
 resource "random_integer" "cp_vm_id" {
   max = 999999999
-  min = 100
+  min = 100000000
 }
 
 resource "proxmox_vm_qemu" "controlplane" {
@@ -35,16 +35,4 @@ resource "proxmox_vm_qemu" "controlplane" {
     model    = var.controlplane_network_model
     firewall = var.controlplane_network_firewall
   }
-}
-
-resource "null_resource" "controlplane" {
-  depends_on = [proxmox_vm_qemu.controlplane]
-  provisioner "local-exec" {
-    command = "bash ../scripts/get_cp_ip.sh ${local.proxmox_ssh_key_path} ${var.proxmox_ip} ${local.cp_ip_filename} ${proxmox_vm_qemu.controlplane.vmid}"
-  }
-}
-
-data "local_file" "cp_ip" {
-  depends_on = [null_resource.controlplane]
-  filename   = local.cp_ip_filename
 }
