@@ -74,6 +74,7 @@ jobs:
     - uses: hashicorp/setup-terraform@v2.0.3
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_wrapper: 'false'
 
     - name: Init
       id: init
@@ -89,8 +90,6 @@ jobs:
         } catch (error) {
           echo 'There is cluster with name "${{ inputs.cluster_name }}". The cluster name MUST BE unique.'
         }
-      with:
-        terraform_wrapper: 'false'
       
     - name: Validate
       id: validate
