@@ -1,0 +1,37 @@
+name: Destroy Kubernetes Cluster and Terraform Cloud Workspace
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_name:
+        description: 'Kubernetes Cluster Name'
+        required: true
+
+env:
+  TF_CLOUD_ORGANIZATION: "infraheads"
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+
+jobs:
+  destroy-resources:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Destroy Kubernetes Cluster
+        run: |
+          # Initialize Terraform
+          # cd path/to/terraform/directory
+          terraform init
+
+          # Destroy Kubernetes Cluster
+          terraform destroy -auto-approve \
+            -var="cluster_name=${{ github.event.inputs.cluster_name }}"
+
+      - name: Destroy Terraform Cloud Workspace
+        run: |
+          # Terraform Cloud API to destroy workspace
+          curl \
+            -H "Authorization: Bearer $TF_CLOUD_API_TOKEN" \
+            -X DELETE \
+            "https://app.terraform.io/api/v2/organizations/$TF_CLOUD_ORGANIZATION/workspaces/${{ github.event.inputs.cluster_name }}"
