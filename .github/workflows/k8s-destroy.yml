@@ -67,4 +67,5 @@ jobs:
       - name: Destroy Terraform Cloud Workspace
         run: |
           # Terraform Cloud API to destroy workspace
+          terrafrom workspace select default-ws
           terraform workspace delete ${{ inputs.cluster_name }}
