@@ -28,6 +28,8 @@ jobs:
           # Initialize Terraform
           # cd path/to/terraform/directory
           terraform init
+        env:
+          TF_WORKSPACE: "default-ws"
           
       - name: Select workspace
         run: |
