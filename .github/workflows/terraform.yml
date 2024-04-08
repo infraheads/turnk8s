@@ -91,7 +91,7 @@ jobs:
         if [ $tf_exitcode -ne 0 ]; 
         then
           echo """
-            Error: Cluster already existing.
+            Error: Cluster already exists.
             Message: There is already a cluster with the name '${{ inputs.cluster_name }}'. The cluster name MUST BE unique.
             """
           exit 1
