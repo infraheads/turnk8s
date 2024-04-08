@@ -83,8 +83,13 @@ jobs:
 
     - name: Select workspace
       id: workspace
-      run: terraform workspace new ${{ inputs.cluster_name }}
-
+      run: |
+        try {
+          terraform workspace new ${{ inputs.cluster_name }}
+        } catch (error) {
+          echo 'There is cluster with name "${{ inputs.cluster_name }}". The cluster name MUST BE unique.'
+        }
+      
     - name: Validate
       id: validate
       run: terraform validate -no-color
