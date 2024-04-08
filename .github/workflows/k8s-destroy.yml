@@ -18,15 +18,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Destroy Kubernetes Cluster
+      - uses: hashicorp/setup-terraform@v2.0.3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Init
         run: |
           # Initialize Terraform
           # cd path/to/terraform/directory
           terraform init
 
+      - name: Select workspace
+        run: |
+          set +e
+          
+          # Check if Kubernetes cluster exists (you may need to adjust this command based on how you manage Kubernetes clusters)
+          kubectl get cluster ${{ inputs.cluster_name }} -n ${{ inputs.cluster_name }} &> /dev/null
+          kubectl_exitcode=$?
+
+          # Check if Terraform workspace exists
+          terraform workspace select ${{ inputs.cluster_name }}
+          tf_exitcode=$?
+          
+          set -e
+
+          if [ $kubectl_exitcode -ne 0 ] || [ $tf_exitcode -ne 0 ]; 
+          then
+            echo """
+              Error: Cluster or Workspace does not exist.
+              Message: There is no Kubernetes cluster or Terraform workspace with the name '${{ inputs.cluster_name }}'.
+              """
+            exit 1
+          fi
+
+      - name: Destroy 
+        run: |
           # Destroy Kubernetes Cluster
           terraform destroy -auto-approve \
-            -var="cluster_name=${{ github.event.inputs.cluster_name }}"
+          -var="cluster_name=${{ github.event.inputs.cluster_name }}"
 
       - name: Destroy Terraform Cloud Workspace
         run: |
