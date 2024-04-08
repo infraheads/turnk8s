@@ -31,10 +31,6 @@ jobs:
       - name: Select workspace
         run: |
           set +e
-          
-          # Check if Kubernetes cluster exists (you may need to adjust this command based on how you manage Kubernetes clusters)
-          kubectl get cluster ${{ inputs.cluster_name }} -n ${{ inputs.cluster_name }} &> /dev/null
-          kubectl_exitcode=$?
 
           # Check if Terraform workspace exists
           terraform workspace select ${{ inputs.cluster_name }}
@@ -42,7 +38,7 @@ jobs:
           
           set -e
 
-          if [ $kubectl_exitcode -ne 0 ] || [ $tf_exitcode -ne 0 ]; 
+          if [ $tf_exitcode -ne 0 ]; 
           then
             echo """
               Error: Cluster or Workspace does not exist.
