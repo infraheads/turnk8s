@@ -87,7 +87,7 @@ jobs:
         try {
           terraform workspace new ${{ inputs.cluster_name }}
         } catch (error) {
-          core.setFailed("There is cluster with name ${{ inputs.cluster_name }}. The cluster name MUST BE unique.");
+          echo 'There is cluster with name "${{ inputs.cluster_name }}". The cluster name MUST BE unique.'
         }
       
     - name: Validate
