@@ -14,6 +14,12 @@ env:
 jobs:
   destroy-resources:
     runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,7 +32,6 @@ jobs:
       - name: Init
         run: |
           # Initialize Terraform
-          # cd path/to/terraform/directory
           terraform init
         env:
           TF_WORKSPACE: "default-ws"
