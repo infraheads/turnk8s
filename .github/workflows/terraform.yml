@@ -74,7 +74,6 @@ jobs:
     - uses: hashicorp/setup-terraform@v2.0.3
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-        terraform_wrapper: 'false'
 
     - name: Init
       id: init
@@ -85,11 +84,12 @@ jobs:
     - name: Select workspace
       id: workspace
       run: |
-        try {
-          terraform workspace new ${{ inputs.cluster_name }}
-        } catch (error) {
-          echo 'There is cluster with name "${{ inputs.cluster_name }}". The cluster name MUST BE unique.'
-        }
+        set +e # allow the workflow to continue following steps even if the `terraform` execution failed
+        terraform workspace new ${{ inputs.cluster_name }} 1>stdout 2>stderr
+        tf_exitcode=$?
+        echo "::set-output name=exitcode::$tf_exitcode"
+        echo "::set-output name=stdout::$(cat ./stdout)"
+        echo "::set-output name=stderr::$(cat ./stderr)"
       
     - name: Validate
       id: validate
