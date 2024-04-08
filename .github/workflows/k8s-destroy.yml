@@ -41,7 +41,6 @@ jobs:
           set +e
 
           # Check if Terraform workspace exists
-          terraform workspace list
           terraform workspace select ${{ inputs.cluster_name }}
           tf_exitcode=$?
           
@@ -60,12 +59,9 @@ jobs:
         run: |
           # Destroy Kubernetes Cluster
           terraform destroy -auto-approve \
-          -var="cluster_name=${{ github.event.inputs.cluster_name }}"
+          -var="cluster_name=${{ inputs.cluster_name }}
 
       - name: Destroy Terraform Cloud Workspace
         run: |
           # Terraform Cloud API to destroy workspace
-          curl \
-            -H "Authorization: Bearer $TF_CLOUD_API_TOKEN" \
-            -X DELETE \
-            "https://app.terraform.io/api/v2/organizations/$TF_CLOUD_ORGANIZATION/workspaces/${{ github.event.inputs.cluster_name }}"
+          terraform workspace delete ${{ inputs.cluster_name }}
