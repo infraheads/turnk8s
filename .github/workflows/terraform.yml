@@ -84,13 +84,17 @@ jobs:
     - name: Select workspace
       id: workspace
       run: |
-        set +e # allow the workflow to continue following steps even if the `terraform` execution failed
-        terraform workspace new ${{ inputs.cluster_name }} 1>stdout 2>stderr
+        set +e
+        terraform workspace new ${{ inputs.cluster_name }}
         tf_exitcode=$?
-        set -e  # Re-enable exit-on-error
-        if [ $tf_exitcode -ne 0 ]; then
-          echo "There is already a cluster with the name '${{ inputs.cluster_name }}'. The cluster name MUST BE unique."
-          exit 1  # Mark the step as failed
+        set -e
+        if [ $tf_exitcode -ne 0 ]; 
+        then
+          echo """
+            Error: Cluster already existing.
+            Message: There is already a cluster with the name '${{ inputs.cluster_name }}'. The cluster name MUST BE unique.
+            """
+          exit 1
         fi
       
     - name: Validate
@@ -103,7 +107,19 @@ jobs:
 
     - name: Apply
       id: apply
-      run: terraform apply tfplan
+      run: |
+        set +e
+        terraform apply tfplan
+        tf_exitcode=$?
+        set -e
+        if [ $tf_exitcode -ne 0 ];
+        then
+        echo """
+            Error: Unable to create a Cluster.
+            Message: This could be caused by a lack of resources in the server. Please review the server resources and try again.
+            """
+        exit 1
+        fi
 
     - name: Upload test file as artifact
       uses: actions/upload-artifact@v3
