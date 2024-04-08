@@ -83,8 +83,13 @@ jobs:
 
     - name: Select workspace
       id: workspace
-      run: terraform workspace new ${{ inputs.cluster_name }}
-
+      run: |
+        try {
+          terraform workspace new ${{ inputs.cluster_name }}
+        } catch (error) {
+          core.setFailed(error.message);
+        }
+      
     - name: Validate
       id: validate
       run: terraform validate -no-color
