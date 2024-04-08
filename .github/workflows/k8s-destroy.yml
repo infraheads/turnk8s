@@ -27,6 +27,7 @@ jobs:
           set +e
 
           # Check if Terraform workspace exists
+          terraform workspace list
           terraform workspace select ${{ inputs.cluster_name }}
           tf_exitcode=$?
           
