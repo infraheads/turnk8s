@@ -7,7 +7,7 @@ resource "talos_machine_secrets" "talos_secrets" {
 data "talos_machine_configuration" "cp_mc" {
   cluster_name       = "${var.cluster_name}-cp-${random_integer.cp_vm_id.result}"
   machine_type       = "controlplane"
-  cluster_endpoint   = "https://${data.local_file.cp_ip.content}:6443"
+  cluster_endpoint   = "https://${local.cp_ip}:6443"
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.kubernetes_version
   talos_version      = local.talos_version
@@ -15,11 +15,11 @@ data "talos_machine_configuration" "cp_mc" {
 
 # Generates client configuration for a Talos cluster (talosconfig)
 data "talos_client_configuration" "cp_cc" {
-  depends_on           = [data.local_file.cp_ip]
+  depends_on           = [local.cp_ip]
   cluster_name         = data.talos_machine_configuration.cp_mc.cluster_name
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
-  nodes                = [data.local_file.cp_ip.content]
-  endpoints            = [data.local_file.cp_ip.content]
+  nodes                = [local.cp_ip]
+  endpoints            = [local.cp_ip]
 }
 
 # Applies machine configuration to the control plane
@@ -29,7 +29,7 @@ resource "talos_machine_configuration_apply" "cp_mca" {
   ]
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.cp_mc.machine_configuration
-  node                        = data.local_file.cp_ip.content
+  node                        = local.cp_ip
 }
 
 # Bootstraps the etcd cluster on the control plane
@@ -37,7 +37,7 @@ resource "talos_machine_bootstrap" "cp_mb" {
   depends_on = [
     talos_machine_configuration_apply.cp_mca
   ]
-  node                 = data.local_file.cp_ip.content
+  node                 = local.cp_ip
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
 
 }
@@ -48,7 +48,7 @@ data "talos_cluster_kubeconfig" "cp_ck" {
     talos_machine_bootstrap.cp_mb
   ]
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
-  node                 = data.local_file.cp_ip.content
+  node                 = local.cp_ip
 }
 
 # Generates a machine configuration for the worker (worker.yaml)
@@ -65,7 +65,7 @@ data "talos_machine_configuration" "worker_mc" {
 
 # Applies machine configuration to the worker node
 resource "talos_machine_configuration_apply" "worker_mca" {
-  count = var.worker_nodes_count
+  count      = var.worker_nodes_count
   depends_on = [
     proxmox_vm_qemu.worker
   ]
@@ -74,7 +74,7 @@ resource "talos_machine_configuration_apply" "worker_mca" {
   machine_configuration_input = data.talos_machine_configuration.worker_mc[count.index].machine_configuration
   node                        = try(
     [
-      for line in split("\n", data.local_file.wn_ip.content):
+      for line in split("\n", data.local_file.vm_ips.content):
         split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(random_integer.wn_vm_id[count.index].result)
     ][0],
     null

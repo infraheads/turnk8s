@@ -40,15 +40,3 @@ resource "proxmox_vm_qemu" "worker" {
     firewall = var.worker_network_firewall
   }
 }
-
-resource "null_resource" "worker" {
-  depends_on = [proxmox_vm_qemu.worker]
-  provisioner "local-exec" {
-    command = "bash ../scripts/get_wn_ip.sh ${local.proxmox_ssh_key_path} ${var.proxmox_ip} ${local.wn_ip_filename} ${join(" ", proxmox_vm_qemu.worker.*.vmid)}"
-  }
-}
-
-data "local_file" "wn_ip" {
-  depends_on = [null_resource.worker]
-  filename   = "${local.wn_ip_filename}"
-}
