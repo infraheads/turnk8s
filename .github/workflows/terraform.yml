@@ -89,6 +89,8 @@ jobs:
         } catch (error) {
           echo 'There is cluster with name "${{ inputs.cluster_name }}". The cluster name MUST BE unique.'
         }
+      with:
+        terraform_wrapper: 'false'
       
     - name: Validate
       id: validate
