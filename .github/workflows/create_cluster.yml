@@ -48,7 +48,7 @@ env:
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
 
 jobs:
-  terraform:
+  creating_cluster:
     runs-on: self-hosted
     permissions:
       contents: read
