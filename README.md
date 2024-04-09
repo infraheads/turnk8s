@@ -43,14 +43,14 @@ After workflow is completed, click on the `artifact` to download `kubeconfig` co
 
 
 ### Destroying a Cluster
-For destroying a cluster you need to run the following workflow: **Actions>Destroy the Cluster>Run workflow.** 
+For destroying a cluster you need to run the following workflow: **Actions>Destroy Kubernetes Cluster>Run workflow.** 
 You need to set the cluster name you want to delete.
 
 * **ClusterName:(Required)** - the cluster name which must be deleted
 
 Click on the `Run workflow` button to destroy the cluster. It is completed within 10 minutes.
 
-It is possible to create the cluster the same name, after workflow is completed. 
+It is possible to create a cluster with the same name, after workflow is completed. 
 
 ## Kubectl
 

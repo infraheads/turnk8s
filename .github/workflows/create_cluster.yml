@@ -121,7 +121,7 @@ jobs:
         exit 1
         fi
 
-    - name: Upload test file as artifact
+    - name: Generating kube-config
       uses: actions/upload-artifact@v3
       with:
         name: kube-config

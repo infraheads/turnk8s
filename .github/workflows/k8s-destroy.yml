@@ -1,4 +1,4 @@
-name: Destroy Kubernetes Cluster and Terraform Cloud Workspace
+name: Destroy Kubernetes Cluster
 
 on:
   workflow_dispatch:
@@ -13,6 +13,7 @@ env:
   TF_VAR_proxmox_ip: "${{ secrets.PROXMOX_IP }}"
   TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
   TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+  TF_VAR_cluster_name: "${{ inputs.cluster_name }}"
 
 jobs:
   destroy-resources:
@@ -32,23 +33,18 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
           
           
-      - name: Init
+      - name: Initializing Terraform
         run: |
-          # Initialize Terraform
           terraform init
         env:
           TF_WORKSPACE: "default-ws"
           
-      - name: Select workspace
+      - name: Selecting Terraform Workspace
         run: |
           set +e
-
-          # Check if Terraform workspace exists
           terraform workspace select ${{ inputs.cluster_name }}
           tf_exitcode=$?
-          
           set -e
-
           if [ $tf_exitcode -ne 0 ]; 
           then
               echo """
@@ -58,14 +54,12 @@ jobs:
               exit 1
           fi
 
-      - name: Destroy 
+      - name: Destroying Terraform  
         run: |
-          # Destroy Kubernetes Cluster
-          terraform destroy -auto-approve \
-          -var="cluster_name=${{ inputs.cluster_name }}"
+          terraform destroy --target proxmox_vm_qemu.worker
+          terraform destroy --target proxmox_vm_qemu.controlplane
 
-      - name: Destroy Terraform Cloud Workspace
+      - name: Destroying Terraform Cloud Workspace
         run: |
-          # Terraform Cloud API to destroy workspace
           terraform workspace select default-ws
-          terraform workspace delete ${{ inputs.cluster_name }}
+          terraform workspace delete -force ${{ inputs.cluster_name }}
