@@ -46,7 +46,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform.d/plugin-cache
+  TF_PLUGIN_CACHE_DIR: $HOME/.terraform.d/plugin-cache
 
 jobs:
   creating_cluster:
@@ -75,9 +75,6 @@ jobs:
     - uses: hashicorp/setup-terraform@v2.0.3
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-    - name: Create Terraform Plugin Cache Dir
-      run: mkdir --parents $TF_PLUGIN_CACHE_DIR
 
     - name: Cache Terraform
       uses: actions/cache@v4

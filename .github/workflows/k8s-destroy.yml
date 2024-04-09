@@ -10,10 +10,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_VAR_proxmox_ip: "${{ secrets.PROXMOX_IP }}"
-  TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
-  TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
-  TF_VAR_cluster_name: "${{ inputs.cluster_name }}"
+  TF_PLUGIN_CACHE_DIR: $HOME/.terraform.d/plugin-cache
 
 jobs:
   destroy-resources:
@@ -24,6 +21,11 @@ jobs:
     defaults:
       run:
         working-directory: "terraform"
+    env:
+      TF_VAR_proxmox_ip: "${{ secrets.PROXMOX_IP }}"
+      TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
+      TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+      TF_VAR_cluster_name: "${{ inputs.cluster_name }}"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,8 +33,15 @@ jobs:
       - uses: hashicorp/setup-terraform@v2.0.3
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-          
-          
+
+      - name: Cache Terraform
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.TF_PLUGIN_CACHE_DIR }}
+          key: terraform-${{ runner.os }}-cache-${{ hashFiles('**/.terraform.lock.hcl') }}
+          restore-keys: |
+            terraform-${{ runner.os }}-cache-
+
       - name: Initializing Terraform
         run: |
           terraform init
