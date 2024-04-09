@@ -54,7 +54,7 @@ It is possible to create a cluster with the same name, after workflow is complet
 
 ## Kubectl
 
-Now insert the output value of `exporting_kubeconfig`. Run `terraform output exporting_kubeconfig` command to view again the output.
+Now `unzip` the downloaded kubeconfig and export it as a `KUBECONFIG` variable.
 <br>
 Try `kubectl get node` to check Kubernetes is running or not.
 
