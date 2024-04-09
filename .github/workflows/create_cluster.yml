@@ -1,4 +1,4 @@
-name: 'Terraform Workflow'
+name: 'Create a Cluster'
 
 on:
   workflow_dispatch:
@@ -115,9 +115,9 @@ jobs:
         if [ $tf_exitcode -ne 0 ];
         then
         echo """
-            Error: Unable to create a Cluster.
-            Message: This could be caused by a lack of resources in the server. Please review the server resources and try again.
-            """
+          Error: Unable to create a Cluster.
+          Message: This could be caused by a lack of resources in the server. Please review the server resources and try again.
+          """
         exit 1
         fi
 
