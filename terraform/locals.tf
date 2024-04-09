@@ -1,7 +1,7 @@
 locals {
   proxmox_api_url      = "https://${var.proxmox_ip}:8006/api2/json"
   proxmox_ssh_key_path = "~/.ssh/proxmox_key"
-  ip_filename          = "vms_ip.txt"
+  ip_filename          = "${var.cluster_name}_vms_ip.txt"
 
   talos_version      = "v1.6.7"
   kubernetes_version = "v1.29.3"

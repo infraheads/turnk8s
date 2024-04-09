@@ -56,8 +56,7 @@ jobs:
 
       - name: Destroying Terraform  
         run: |
-          terraform destroy --target proxmox_vm_qemu.worker -auto-approve
-          terraform destroy --target proxmox_vm_qemu.controlplane -auto-approve
+          terraform destroy -auto-approve
 
       - name: Destroying Terraform Cloud Workspace
         run: |
