@@ -1,3 +1,8 @@
+resource "local_file" "vm_ips" {
+  filename   = local.ip_filename
+  content = ""
+}
+
 resource "terraform_data" "vm_ips" {
   depends_on = [proxmox_vm_qemu.worker, proxmox_vm_qemu.controlplane]
   provisioner "local-exec" {
