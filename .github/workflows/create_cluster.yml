@@ -75,13 +75,13 @@ jobs:
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Init
+    - name: Initializing Terraform
       id: init
       run: terraform init
       env:
         TF_WORKSPACE: "default-ws"
 
-    - name: Select workspace
+    - name: Selecting Terraform Workspace
       id: workspace
       run: |
         set +e
@@ -97,15 +97,15 @@ jobs:
           exit 1
         fi
       
-    - name: Validate
+    - name: Validating Terraform
       id: validate
       run: terraform validate -no-color
 
-    - name: Plan
+    - name: Planning Terraform
       id: plan
       run: terraform plan -out=tfplan
 
-    - name: Apply
+    - name: Applying Terraform
       id: apply
       run: |
         set +e
