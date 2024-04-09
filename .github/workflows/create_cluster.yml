@@ -122,7 +122,8 @@ jobs:
         fi
 
     - name: Generating kube-config
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: kube-config
         path: /tmp/kube-config
+        compression-level: 0
