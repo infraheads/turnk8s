@@ -34,10 +34,11 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
           terraform_version: 1.7.5
 
+      - name: Configure Terraform Cache
+        run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+
       - name: Initializing Terraform
-        run: |
-          echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
-          terraform init
+        run: terraform init
         env:
           TF_WORKSPACE: "default-ws"
           
