@@ -46,7 +46,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
+#  TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
 
 jobs:
   creating_cluster:
@@ -75,14 +75,17 @@ jobs:
     - uses: hashicorp/setup-terraform@v2.0.3
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_version: 1.7.5
 
     - name: Configure Terraform Plugin Cache
-      run: mkdir --parents ${{ env.TF_PLUGIN_CACHE_DIR }}
+      run: |
+        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
+        mkdir --parents "$HOME/.terraform.d/plugin-cache"
 
     - name: Cache Terraform
       uses: actions/cache@v4
       with:
-        path: ${{ env.TF_PLUGIN_CACHE_DIR }}
+        path: ~/.terraform.d/plugin-cache
         key: terraform-${{ runner.os }}-cache-${{ hashFiles('**/.terraform.lock.hcl') }}
         restore-keys: |
           terraform-${{ runner.os }}-cache-
