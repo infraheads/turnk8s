@@ -57,6 +57,7 @@ jobs:
       run:
         working-directory: "terraform"
     env:
+      TF_PLUGIN_CACHE_DIR: "$HOME/.terraform.d/plugin-cache"
       TF_VAR_proxmox_ip: "${{ secrets.PROXMOX_IP }}"
       TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
       TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
@@ -93,7 +94,6 @@ jobs:
       run: terraform init
       env:
         TF_WORKSPACE: "default-ws"
-        TF_PLUGIN_CACHE_DIR: "$HOME/.terraform.d/plugin-cache"
 
     - name: Selecting Terraform Workspace
       id: workspace
