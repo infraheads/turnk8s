@@ -10,7 +10,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_PLUGIN_CACHE_DIR: $HOME/.terraform.d/plugin-cache
+  TF_PLUGIN_CACHE_DIR: ${{ runner.env.HOME }}/.terraform.d/plugin-cache
 
 jobs:
   destroy-resources:
@@ -33,18 +33,10 @@ jobs:
       - uses: hashicorp/setup-terraform@v2.0.3
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Cache Terraform
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.TF_PLUGIN_CACHE_DIR }}
-          key: terraform-${{ runner.os }}-cache-${{ hashFiles('**/.terraform.lock.hcl') }}
-          restore-keys: |
-            terraform-${{ runner.os }}-cache-
+          terraform_version: 1.7.5
 
       - name: Initializing Terraform
-        run: |
-          terraform init
+        run: terraform init
         env:
           TF_WORKSPACE: "default-ws"
           
