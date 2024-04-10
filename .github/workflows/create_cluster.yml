@@ -46,7 +46,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-#  TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugin-cache
+  TF_PLUGIN_CACHE_DIR: "$HOME/.terraform.d/plugin-cache"
 
 jobs:
   creating_cluster:
@@ -77,10 +77,10 @@ jobs:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         terraform_version: 1.7.5
 
-    - name: Configure Terraform Plugin Cache
-      run: |
-        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
-        mkdir --parents "$HOME/.terraform.d/plugin-cache"
+#    - name: Configure Terraform Plugin Cache
+#      run: |
+#        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
+#        mkdir --parents "$HOME/.terraform.d/plugin-cache"
 
     - name: Cache Terraform
       uses: actions/cache@v4
