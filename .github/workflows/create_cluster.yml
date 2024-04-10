@@ -46,7 +46,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_PLUGIN_CACHE_DIR: ${{ runner.env.HOME }}/.terraform.d/plugin-cache
+  TF_PLUGIN_CACHE_DIR: ${{ env.HOME }}/.terraform.d/plugin-cache
 
 jobs:
   creating_cluster:
