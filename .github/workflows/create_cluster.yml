@@ -57,6 +57,7 @@ jobs:
       run:
         working-directory: "terraform"
     env:
+      TF_PLUGIN_CACHE_DIR: $HOME/.terraform.d/plugin-cache
       TF_VAR_proxmox_ip: "${{ secrets.PROXMOX_IP }}"
       TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
       TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
@@ -76,9 +77,9 @@ jobs:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         terraform_version: 1.7.5
 
-    - name: Configure Terraform Plugin Cache
-      run: |
-        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
+#    - name: Configure Terraform Plugin Cache
+#      run: |
+#        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
 #        mkdir --parents $HOME/.terraform.d/plugin-cache
 
 #    - name: Cache Terraform
@@ -91,7 +92,9 @@ jobs:
 
     - name: Initializing Terraform
       id: init
-      run: terraform init
+      run: |
+        echo "TF_PLUGIN_CACHE_DIR is ${{ env.TF_PLUGIN_CACHE_DIR }}"
+        terraform init
       env:
         TF_WORKSPACE: "default-ws"
 
