@@ -68,7 +68,6 @@ jobs:
       TF_VAR_worker_cores: "${{ inputs.worker_cpu_cores }}"
       TF_VAR_worker_memory: "${{ inputs.worker_memory }}"
       TF_VAR_worker_disk_size: "${{ inputs.worker_disk_size }}"
-      TF_PLUGIN_CACHE_DIR: $HOME/.terraform.d/plugin-cache
     steps:
     - uses: actions/checkout@v4
 
@@ -77,9 +76,9 @@ jobs:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         terraform_version: 1.7.5
 
-#    - name: Configure Terraform Plugin Cache
-#      run: |
-#        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
+    - name: Configure Terraform Plugin Cache
+      run: |
+        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >>"$GITHUB_ENV"
 
     - name: Cache Terraform
       uses: actions/cache@v4
@@ -91,9 +90,7 @@ jobs:
 
     - name: Initializing Terraform
       id: init
-      run: |
-        echo "${{ env.TF_PLUGIN_CACHE_DIR }}"
-        terraform init
+      run: terraform init
       env:
         TF_WORKSPACE: "default-ws"
 
