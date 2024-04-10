@@ -76,6 +76,9 @@ jobs:
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
+    - name: Configure Terraform Plugin Cache
+      run: mkdir --parents ${{ env.TF_PLUGIN_CACHE_DIR }}
+
     - name: Cache Terraform
       uses: actions/cache@v4
       with:
