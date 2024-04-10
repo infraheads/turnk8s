@@ -79,7 +79,7 @@ jobs:
     - name: Initializing Terraform
       id: init
       run: |
-        echo ${{runner.HOME}}
+        echo ${{ runner.env.HOME }}
         terraform init
       env:
         TF_WORKSPACE: "default-ws"
