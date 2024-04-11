@@ -25,7 +25,7 @@ variable "cluster_name" {
 variable "controlplane_iso" {
   description = "The name of the ISO image to mount to the VM."
   type        = string
-  default     = "local:iso/metal-amd64.iso"
+  default     = "local:iso/metal-amd64-latest.iso"
 }
 
 variable "controlplane_cores" {
