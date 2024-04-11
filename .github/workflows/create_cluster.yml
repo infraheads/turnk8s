@@ -10,38 +10,66 @@ on:
       controlplane_cpu_cores:
         description: 'CPU cores count of the ControlPlane'
         required: true
-        type: number
+        type: choice
         default: 2
+        options:
+          - 2
+          - 4
+          - 6
       controlplane_memory:
         description: 'RAM memory of the ControlPlane'
         required: true
-        type: number
+        type: choice
         default: 4096
+        options:
+          - 4096
+          - 6144
+          - 8192
+          - 16384
       controlplane_disk_size:
         description: 'Disk size of the ControlPlane'
         required: true
-        type: number
-        default: 32
+        type: choice
+        default: 20
+        options:
+          - 20
+          - 40
+          - 80
       worker_nodes_count:
         description: 'Count of the Worker Nodes'
         required: true
-        type: number
+        type: choice
         default: 1
+        options:
+          - 1
+          - 2
+          - 3
       worker_cpu_cores:
         description: 'CPU cores count of the Worker Node'
         required: true
-        type: number
+        type: choice
         default: 2
+        options:
+          - 2
+          - 4
       worker_memory:
         description: 'RAM memory of the Worker Node'
         required: true
-        type: number
+        type: choice
         default: 4096
+        options:
+          - 4096
+          - 6144
+          - 8192
       worker_disk_size:
         description: 'Disk size of the Worker Node'
         required: true
-        type: number
-        default: 32
+        type: choice
+        default: 20
+        options:
+          - 20
+          - 40
+          - 60
 
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
