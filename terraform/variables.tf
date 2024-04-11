@@ -104,7 +104,7 @@ variable "worker_nodes_count" {
 variable "worker_iso" {
   description = "The name of the ISO image to mount to the VM."
   type        = string
-  default     = "local:iso/metal-amd64.iso"
+  default     = "local:iso/metal-amd64-latest.iso"
 }
 
 variable "worker_cores" {
