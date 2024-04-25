@@ -43,7 +43,7 @@ on:
         options:
           - 1
           - 2
-          - 3
+          - 7
       worker_cpu_cores:
         description: 'CPU cores count of the Worker Node'
         required: true
