@@ -3,6 +3,14 @@ name: 'Create a Cluster'
 on:
   workflow_dispatch:
     inputs:
+      host_ip:
+        description: 'IP address of the host being used'
+        required: true
+        type: choice
+        default: '192.168.1.5'
+        options:
+          - 192.168.1.5
+          - 192.168.1.21
       cluster_name:
         description: 'A unique Cluster name'
         required: true
@@ -11,7 +19,7 @@ on:
         description: 'CPU cores count of the ControlPlane'
         required: true
         type: choice
-        default: 2
+        default: '2'
         options:
           - 2
           - 4
@@ -20,7 +28,7 @@ on:
         description: 'RAM memory of the ControlPlane'
         required: true
         type: choice
-        default: 4096
+        default: '4096'
         options:
           - 4096
           - 6144
@@ -30,7 +38,7 @@ on:
         description: 'Disk size of the ControlPlane'
         required: true
         type: choice
-        default: 20
+        default: '20'
         options:
           - 20
           - 40
@@ -39,7 +47,7 @@ on:
         description: 'Count of the Worker Nodes'
         required: true
         type: choice
-        default: 1
+        default: '1'
         options:
           - 1
           - 2
@@ -48,7 +56,7 @@ on:
         description: 'CPU cores count of the Worker Node'
         required: true
         type: choice
-        default: 2
+        default: '2'
         options:
           - 2
           - 4
@@ -56,7 +64,7 @@ on:
         description: 'RAM memory of the Worker Node'
         required: true
         type: choice
-        default: 4096
+        default: '4096'
         options:
           - 4096
           - 6144
@@ -65,7 +73,7 @@ on:
         description: 'Disk size of the Worker Node'
         required: true
         type: choice
-        default: 20
+        default: '20'
         options:
           - 20
           - 40
@@ -85,7 +93,7 @@ jobs:
       run:
         working-directory: "terraform"
     env:
-      TF_VAR_proxmox_ip: "${{ secrets.PROXMOX_IP }}"
+      TF_VAR_proxmox_ip: "${{ inputs.host_ip }}"
       TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
       TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
       TF_VAR_cluster_name: "${{ inputs.cluster_name }}"
