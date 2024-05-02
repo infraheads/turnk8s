@@ -14,7 +14,12 @@ ssh -i $ssh_key_path root@$proxmox_ip  """
       export vm_ip=\$(arp-scan --interface=vmbr0 $proxmox_ip/24 | grep \$mac | awk '{printf \"%s \", \$1}');
       if [[ -n \$vm_ip ]]
       then
-        echo \$vm_id \$vm_ip
+        if [[ \$vm_id == ${vm_ids[-1]} ]]
+        then
+          echo -n \$vm_id \$vm_ip
+        else
+          echo \$vm_id \$vm_ip
+        fi
         break;
       fi
       sleep 3;

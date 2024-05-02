@@ -11,11 +11,19 @@ data "talos_machine_configuration" "cp_mc" {
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.kubernetes_version
   talos_version      = local.talos_version
+  config_patches     = [
+    templatefile("${path.module}/templates/controlplane.yaml.tpl",
+      {
+        talos-version      = local.talos_version,
+        kubernetes-version = local.kubernetes_version
+      }
+    )
+  ]
 }
 
 # Generates client configuration for a Talos cluster (talosconfig)
 data "talos_client_configuration" "cp_cc" {
-  depends_on           = [local.cp_ip]
+  depends_on           = [proxmox_vm_qemu.controlplane]
   cluster_name         = data.talos_machine_configuration.cp_mc.cluster_name
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
   nodes                = [local.cp_ip]
@@ -61,6 +69,14 @@ data "talos_machine_configuration" "worker_mc" {
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.kubernetes_version
   talos_version      = local.talos_version
+  config_patches     = [
+    templatefile("${path.module}/templates/worker.yaml.tpl",
+      {
+        talos-version      = local.talos_version,
+        kubernetes-version = local.kubernetes_version
+      }
+    )
+  ]
 }
 
 # Applies machine configuration to the worker node
@@ -80,3 +96,20 @@ resource "talos_machine_configuration_apply" "worker_mca" {
     null
   )
 }
+
+data "talos_cluster_health" "cluster_health" {
+  depends_on = [data.talos_cluster_kubeconfig.cp_ck]
+  client_configuration = talos_machine_secrets.talos_secrets.client_configuration
+  control_plane_nodes  = [local.cp_ip]
+#   worker_nodes = proxmox_vm_qemu.worker.*.default_ipv4_address
+  worker_nodes = [
+    for line in split("\n", data.local_file.vm_ips.content):
+      split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[1] != tostring(local.cp_ip)
+  ]
+  endpoints = [local.cp_ip]
+  timeouts = {
+    read = "1h"
+  }
+}
+
+

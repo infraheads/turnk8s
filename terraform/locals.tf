@@ -9,7 +9,7 @@ locals {
   cp_ip = try(
     [
       for line in split("\n", data.local_file.vm_ips.content):
-        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(random_integer.cp_vm_id.result)
+        split(" ", line)[1] if split(" ", line)[0] == tostring(random_integer.cp_vm_id.result)
     ][0],
     null
   )
