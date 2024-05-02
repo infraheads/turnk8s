@@ -3,9 +3,6 @@ locals {
   proxmox_ssh_key_path = "~/.ssh/proxmox_key"
   ip_filename          = "/tmp/${var.cluster_name}_vms_ip.txt"
 
-  talos_version      = "v1.6.7"
-  kubernetes_version = "v1.29.3"
-
   cp_ip = try(
     [
       for line in split("\n", data.local_file.vm_ips.content):

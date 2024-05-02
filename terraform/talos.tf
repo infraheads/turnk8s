@@ -1,6 +1,6 @@
 # Generates machine secrets for Talos cluster
 resource "talos_machine_secrets" "talos_secrets" {
-  talos_version = local.talos_version
+  talos_version = var.talos_version
 }
 
 # Generates a machine configuration for the control plane (controlplane.yaml)
@@ -9,13 +9,13 @@ data "talos_machine_configuration" "cp_mc" {
   machine_type       = "controlplane"
   cluster_endpoint   = "https://${local.cp_ip}:6443"
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
-  kubernetes_version = local.kubernetes_version
-  talos_version      = local.talos_version
+  kubernetes_version = var.k8s_version
+  talos_version      = var.talos_version
   config_patches     = [
     templatefile("${path.module}/templates/controlplane.yaml.tpl",
       {
-        talos-version      = local.talos_version,
-        kubernetes-version = local.kubernetes_version
+        talos-version      = var.talos_version,
+        kubernetes-version = var.k8s_version
       }
     )
   ]
@@ -67,13 +67,13 @@ data "talos_machine_configuration" "worker_mc" {
   machine_type       = "worker"
   cluster_endpoint   = data.talos_machine_configuration.cp_mc.cluster_endpoint
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
-  kubernetes_version = local.kubernetes_version
-  talos_version      = local.talos_version
+  kubernetes_version = var.k8s_version
+  talos_version      = var.talos_version
   config_patches     = [
     templatefile("${path.module}/templates/worker.yaml.tpl",
       {
-        talos-version      = local.talos_version,
-        kubernetes-version = local.kubernetes_version
+        talos-version      = var.talos_version,
+        kubernetes-version = var.k8s_version
       }
     )
   ]

@@ -1,3 +1,13 @@
+variable "talos_version" {
+  description = "Talos version to be used"
+  type = string
+}
+
+variable "k8s_version" {
+  description = "K8s version to be used"
+  type = string
+}
+
 variable "proxmox_ip" {
   description = "IP of the Proxmox server"
   type = string

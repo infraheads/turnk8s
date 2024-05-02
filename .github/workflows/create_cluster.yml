@@ -11,6 +11,24 @@ on:
         options:
           - 192.168.1.5
           - 192.168.1.21
+      talos_version:
+        description: 'Version of Talos to be used'
+        required: true
+        type: choice
+        default: v1.7.1
+        options:
+          - v1.7.1
+          - v1.7.0
+          - v1.6.7
+      k8s_version:
+        description: 'Version of k8s to be used'
+        required: true
+        type: choice
+        default: v1.30.0
+        options:
+          - v1.30.0
+          - v1.29.3
+          - v1.28.3
       cluster_name:
         description: 'A unique Cluster name'
         required: true
@@ -93,6 +111,8 @@ jobs:
       run:
         working-directory: "terraform"
     env:
+      TF_VAR_talos_version: "${{ inputs.talos_version }}"
+      TF_VAR_k8s_version: "${{ inputs.k8s_version }}"
       TF_VAR_proxmox_ip: "${{ inputs.host_ip }}"
       TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
       TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
