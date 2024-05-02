@@ -5,7 +5,7 @@ resource "talos_machine_secrets" "talos_secrets" {
 
 # Generates a machine configuration for the control plane (controlplane.yaml)
 data "talos_machine_configuration" "cp_mc" {
-  cluster_name       = "${var.cluster_name}-cp-${random_integer.cp_vm_id.result}"
+  cluster_name       = proxmox_vm_qemu.controlplane.name
   machine_type       = "controlplane"
   cluster_endpoint   = "https://${local.cp_ip}:6443"
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
@@ -63,7 +63,7 @@ data "talos_cluster_kubeconfig" "cp_ck" {
 data "talos_machine_configuration" "worker_mc" {
   count = var.worker_nodes_count
 
-  cluster_name       = "${var.cluster_name}-worker-${count.index}-${random_integer.wn_vm_id[count.index].result}"
+  cluster_name       = proxmox_vm_qemu.worker[count.index].name
   machine_type       = "worker"
   cluster_endpoint   = data.talos_machine_configuration.cp_mc.cluster_endpoint
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
@@ -91,7 +91,7 @@ resource "talos_machine_configuration_apply" "worker_mca" {
   node                        = try(
     [
       for line in split("\n", data.local_file.vm_ips.content):
-        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(random_integer.wn_vm_id[count.index].result)
+        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(proxmox_vm_qemu.worker[count.index].vmid)
     ][0],
     null
   )
@@ -101,7 +101,6 @@ data "talos_cluster_health" "cluster_health" {
   depends_on = [data.talos_cluster_kubeconfig.cp_ck]
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
   control_plane_nodes  = [local.cp_ip]
-#   worker_nodes = proxmox_vm_qemu.worker.*.default_ipv4_address
   worker_nodes = [
     for line in split("\n", data.local_file.vm_ips.content):
       split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[1] != tostring(local.cp_ip)

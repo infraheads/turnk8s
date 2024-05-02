@@ -6,7 +6,7 @@ locals {
   cp_ip = try(
     [
       for line in split("\n", data.local_file.vm_ips.content):
-        split(" ", line)[1] if split(" ", line)[0] == tostring(random_integer.cp_vm_id.result)
+        split(" ", line)[1] if split(" ", line)[0] == tostring(proxmox_vm_qemu.controlplane.vmid)
     ][0],
     null
   )
