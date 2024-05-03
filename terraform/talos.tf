@@ -15,7 +15,8 @@ data "talos_machine_configuration" "cp_mc" {
     templatefile("${path.module}/templates/controlplane.yaml.tpl",
       {
         talos-version      = var.talos_version,
-        kubernetes-version = var.k8s_version
+        kubernetes-version = var.k8s_version,
+        registry           = var.talos_images_registry
       }
     )
   ]
@@ -73,7 +74,8 @@ data "talos_machine_configuration" "worker_mc" {
     templatefile("${path.module}/templates/worker.yaml.tpl",
       {
         talos-version      = var.talos_version,
-        kubernetes-version = var.k8s_version
+        kubernetes-version = var.k8s_version,
+        registry           = var.talos_images_registry
       }
     )
   ]

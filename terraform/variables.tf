@@ -3,6 +3,12 @@ variable "talos_version" {
   type = string
 }
 
+variable "talos_images_registry" {
+  description = "The registry from which images should be downloaded for cluster"
+  type = string
+  default = "http://192.168.1.40:6000"
+}
+
 variable "k8s_version" {
   description = "K8s version to be used"
   type = string
