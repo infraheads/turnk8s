@@ -10,7 +10,7 @@ resource "proxmox_vm_qemu" "worker" {
 
   name        = "${var.cluster_name}-worker-${count.index}-${random_integer.wn_vm_id[count.index].result}"
   target_node = "pve01"
-  iso         = var.worker_iso
+  iso         = local.talos_iso
   vmid        = random_integer.wn_vm_id[count.index].result
 
   cores   = var.worker_cores

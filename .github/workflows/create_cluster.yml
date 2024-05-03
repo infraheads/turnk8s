@@ -1,102 +1,12 @@
 name: 'Create a Cluster'
 
 on:
-  workflow_dispatch:
-    inputs:
-      host_ip:
-        description: 'IP address of the host being used'
-        required: true
-        type: choice
-        default: '192.168.1.5'
-        options:
-          - 192.168.1.5
-          - 192.168.1.21
-      talos_version:
-        description: 'Version of Talos to be used'
-        required: true
-        type: choice
-        default: v1.7.1
-        options:
-          - v1.7.1
-          - v1.7.0
-          - v1.6.7
-      k8s_version:
-        description: 'Version of k8s to be used'
-        required: true
-        type: choice
-        default: v1.30.0
-        options:
-          - v1.30.0
-          - v1.29.3
-          - v1.28.3
-      cluster_name:
-        description: 'A unique Cluster name'
-        required: true
-        type: string
-      controlplane_cpu_cores:
-        description: 'CPU cores count of the ControlPlane'
-        required: true
-        type: choice
-        default: '2'
-        options:
-          - 2
-          - 4
-          - 6
-      controlplane_memory:
-        description: 'RAM memory of the ControlPlane'
-        required: true
-        type: choice
-        default: '4096'
-        options:
-          - 4096
-          - 6144
-          - 8192
-          - 16384
-      controlplane_disk_size:
-        description: 'Disk size of the ControlPlane'
-        required: true
-        type: choice
-        default: '20'
-        options:
-          - 20
-          - 40
-          - 80
-      worker_nodes_count:
-        description: 'Count of the Worker Nodes'
-        required: true
-        type: choice
-        default: '1'
-        options:
-          - 1
-          - 2
-          - 7
-      worker_cpu_cores:
-        description: 'CPU cores count of the Worker Node'
-        required: true
-        type: choice
-        default: '2'
-        options:
-          - 2
-          - 4
-      worker_memory:
-        description: 'RAM memory of the Worker Node'
-        required: true
-        type: choice
-        default: '4096'
-        options:
-          - 4096
-          - 6144
-          - 8192
-      worker_disk_size:
-        description: 'Disk size of the Worker Node'
-        required: true
-        type: choice
-        default: '20'
-        options:
-          - 20
-          - 40
-          - 60
-
+  push:
+    branches:
+      - 'master'
+    paths:
+      - '.env'
+      
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
@@ -110,22 +20,11 @@ jobs:
     defaults:
       run:
         working-directory: "terraform"
-    env:
-      TF_VAR_talos_version: "${{ inputs.talos_version }}"
-      TF_VAR_k8s_version: "${{ inputs.k8s_version }}"
-      TF_VAR_proxmox_ip: "${{ inputs.host_ip }}"
-      TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
-      TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
-      TF_VAR_cluster_name: "${{ inputs.cluster_name }}"
-      TF_VAR_controlplane_cores: "${{ inputs.controlplane_cpu_cores }}"
-      TF_VAR_controlplane_memory: "${{ inputs.controlplane_memory }}"
-      TF_VAR_controlplane_disk_size: "${{ inputs.controlplane_disk_size }}"
-      TF_VAR_worker_nodes_count: "${{ inputs.worker_nodes_count }}"
-      TF_VAR_worker_cores: "${{ inputs.worker_cpu_cores }}"
-      TF_VAR_worker_memory: "${{ inputs.worker_memory }}"
-      TF_VAR_worker_disk_size: "${{ inputs.worker_disk_size }}"
     steps:
     - uses: actions/checkout@v4
+  
+    - name: Passing env file values to GITHUB_ENV
+      run: cat .env >> $GITHUB_ENV
 
     - uses: hashicorp/setup-terraform@v3
       with:
@@ -145,14 +44,14 @@ jobs:
       id: workspace
       run: |
         set +e
-        terraform workspace new ${{ inputs.cluster_name }}
+        terraform workspace new $CLUSTER_NAME
         tf_exitcode=$?
         set -e
         if [ $tf_exitcode -ne 0 ]; 
         then
           echo """
             Error: Cluster already exists.
-            Message: There is already a cluster with the name '${{ inputs.cluster_name }}'. The cluster name MUST BE unique.
+            Message: There is already a cluster with the name '$CLUSTER_NAME'. The cluster name MUST BE unique.
             """
           exit 1
         fi
@@ -163,10 +62,38 @@ jobs:
 
     - name: Planning Terraform
       id: plan
+      env:
+        TF_VAR_talos_version: "$TALOS_VERSION"
+        TF_VAR_k8s_version: "$K8S_VERSION"
+        TF_VAR_proxmox_ip: "$HOST_IP"
+        TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
+        TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+        TF_VAR_cluster_name: "$CLUSTER_NAME"
+        TF_VAR_controlplane_cores: "$CONTROLPLANE_CPU_CORES"
+        TF_VAR_controlplane_memory: "$CONTROLPLANE_MEMORY"
+        TF_VAR_controlplane_disk_size: "$CONTROLPLANE_DISK_SIZE"
+        TF_VAR_worker_nodes_count: "$WORKER_NODES_COUNT"
+        TF_VAR_worker_cores: "$WORKER_CPU_CORES"
+        TF_VAR_worker_memory: "$WORKER_MEMORY"
+        TF_VAR_worker_disk_size: "$WORKER_DISK_SIZE"
       run: terraform plan -out=tfplan
 
     - name: Applying Terraform
       id: apply
+      env:
+        TF_VAR_talos_version: "$TALOS_VERSION"
+        TF_VAR_k8s_version: "$K8S_VERSION"
+        TF_VAR_proxmox_ip: "$HOST_IP"
+        TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
+        TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+        TF_VAR_cluster_name: "$CLUSTER_NAME"
+        TF_VAR_controlplane_cores: "$CONTROLPLANE_CPU_CORES"
+        TF_VAR_controlplane_memory: "$CONTROLPLANE_MEMORY"
+        TF_VAR_controlplane_disk_size: "$CONTROLPLANE_DISK_SIZE"
+        TF_VAR_worker_nodes_count: "$WORKER_NODES_COUNT"
+        TF_VAR_worker_cores: "$WORKER_CPU_CORES"
+        TF_VAR_worker_memory: "$WORKER_MEMORY"
+        TF_VAR_worker_disk_size: "$WORKER_DISK_SIZE"
       run: |
         set +e
         terraform apply tfplan

@@ -37,13 +37,6 @@ variable "cluster_name" {
   type = string
 }
 
-# ControlPlane variables
-variable "controlplane_iso" {
-  description = "The name of the ISO image to mount to the VM."
-  type        = string
-  default     = "local:iso/metal-amd64-latest.iso"
-}
-
 variable "controlplane_cores" {
   description = "The number of CPU cores per CPU socket to allocate to the VM."
   type        = number
@@ -115,12 +108,6 @@ variable "worker_nodes_count" {
   description = "Count of the Worker Nodes."
   type = number
   default = 1
-}
-
-variable "worker_iso" {
-  description = "The name of the ISO image to mount to the VM."
-  type        = string
-  default     = "local:iso/metal-amd64-latest.iso"
 }
 
 variable "worker_cores" {
