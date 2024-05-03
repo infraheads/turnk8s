@@ -63,7 +63,6 @@ jobs:
     - name: Planning Terraform
       id: plan
       env:
-        TF_LOG: TRACE
         TF_VAR_talos_version: "$TALOS_VERSION"
         TF_VAR_k8s_version: "$K8S_VERSION"
         TF_VAR_proxmox_ip: "$HOST_IP"
