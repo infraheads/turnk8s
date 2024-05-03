@@ -36,7 +36,7 @@ jobs:
 
     - name: Initializing Terraform
       id: init
-      run: terraform init
+      run: terraform init -upgrade
       env:
         TF_WORKSPACE: "default-ws"
 
