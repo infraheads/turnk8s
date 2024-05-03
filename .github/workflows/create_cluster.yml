@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v4
   
     - name: Passing env file values to GITHUB_ENV
-      run: cat .env >> $GITHUB_ENV
+      run: cat $GITHUB_WORKSPACE/.env >> $GITHUB_ENV 
 
     - uses: hashicorp/setup-terraform@v3
       with:
