@@ -114,6 +114,3 @@ jobs:
         name: kube-config
         path: /tmp/kube-config
         compression-level: 0
-
-    - name: Important Note
-      run: echo "After the workflow is completed, the cluster gets ready within minutes, depending on the count of the worker nodes."
