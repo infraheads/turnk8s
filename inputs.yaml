@@ -1,4 +1,4 @@
-cluster_name: test3
+cluster_name: test4
 host_ip: 192.168.1.5
 versions:
   talos: v1.7.1
