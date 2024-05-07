@@ -1,6 +1,7 @@
 variable "talos_version" {
   description = "Talos version to be used"
   type = string
+  default = "v1.7.1"
 }
 
 variable "talos_images_registry" {
@@ -12,6 +13,7 @@ variable "talos_images_registry" {
 variable "k8s_version" {
   description = "K8s version to be used"
   type = string
+  default = "v1.30.0"
 }
 
 variable "proxmox_ip" {
@@ -35,6 +37,7 @@ variable "proxmox_token_secret" {
 variable "cluster_name" {
   description = "The name of the cluster."
   type = string
+  default = "Test"
 }
 
 variable "controlplane_cores" {

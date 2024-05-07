@@ -4,25 +4,25 @@ resource "random_integer" "cp_vm_id" {
 }
 
 resource "proxmox_vm_qemu" "controlplane" {
-  name        = "${var.cluster_name}-cp-${random_integer.cp_vm_id.result}"
+  name        = "${local.input_vars.cluster_name}-cp-${random_integer.cp_vm_id.result}"
   target_node = "pve01"
   iso         = local.talos_iso
   vmid        = random_integer.cp_vm_id.result
 
-  cores   = var.controlplane_cores
+  cores   = local.input_vars.controlplane.cpu_cores
   sockets = var.controlplane_sockets
   cpu     = var.controlplane_cpu
 
   qemu_os = var.controlplane_qemu_os
   scsihw  = var.controlplane_scsihw
-  memory  = var.controlplane_memory
+  memory  = local.input_vars.controlplane.memory
 
   disks {
     scsi {
       scsi0 {
         disk {
           storage  = var.controlplane_disk_storage
-          size     = var.controlplane_disk_size
+          size     = local.input_vars.controlplane.disk_size
           iothread = true
           asyncio  = "native"
         }
