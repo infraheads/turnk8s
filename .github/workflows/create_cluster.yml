@@ -63,37 +63,37 @@ jobs:
     - name: Planning Terraform
       id: plan
       env:
-        TF_VAR_talos_version: "$TALOS_VERSION"
-        TF_VAR_k8s_version: "$K8S_VERSION"
-        TF_VAR_proxmox_ip: "$HOST_IP"
+        TF_VAR_talos_version: "${{ env.TALOS_VERSION }}"
+        TF_VAR_k8s_version: "${{ env.K8S_VERSION }}"
+        TF_VAR_proxmox_ip: "${{ env.HOST_IP }}"
         TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
         TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
-        TF_VAR_cluster_name: "$CLUSTER_NAME"
-        TF_VAR_controlplane_cores: "$CONTROLPLANE_CPU_CORES"
-        TF_VAR_controlplane_memory: "$CONTROLPLANE_MEMORY"
-        TF_VAR_controlplane_disk_size: "$CONTROLPLANE_DISK_SIZE"
-        TF_VAR_worker_nodes_count: "$WORKER_NODES_COUNT"
-        TF_VAR_worker_cores: "$WORKER_CPU_CORES"
-        TF_VAR_worker_memory: "$WORKER_MEMORY"
-        TF_VAR_worker_disk_size: "$WORKER_DISK_SIZE"
+        TF_VAR_cluster_name: "${{ env.CLUSTER_NAME }}"
+        TF_VAR_controlplane_cores: "${{ env.CONTROLPLANE_CPU_CORES }}"
+        TF_VAR_controlplane_memory: "${{ env.CONTROLPLANE_MEMORY }}"
+        TF_VAR_controlplane_disk_size: "${{ env.CONTROLPLANE_DISK_SIZE }}"
+        TF_VAR_worker_nodes_count: "${{ env.WORKER_NODES_COUNT }}"
+        TF_VAR_worker_cores: "${{ env.WORKER_CPU_CORES }}"
+        TF_VAR_worker_memory: "${{ env.WORKER_MEMORY }}"
+        TF_VAR_worker_disk_size: "${{ env.WORKER_DISK_SIZE }}"
       run: terraform plan -out=tfplan
 
     - name: Applying Terraform
       id: apply
       env:
-        TF_VAR_talos_version: "$TALOS_VERSION"
-        TF_VAR_k8s_version: "$K8S_VERSION"
-        TF_VAR_proxmox_ip: "$HOST_IP"
+        TF_VAR_talos_version: "${{ env.TALOS_VERSION }}"
+        TF_VAR_k8s_version: "${{ env.K8S_VERSION }}"
+        TF_VAR_proxmox_ip: "${{ env.HOST_IP }}"
         TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
         TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
-        TF_VAR_cluster_name: "$CLUSTER_NAME"
-        TF_VAR_controlplane_cores: "$CONTROLPLANE_CPU_CORES"
-        TF_VAR_controlplane_memory: "$CONTROLPLANE_MEMORY"
-        TF_VAR_controlplane_disk_size: "$CONTROLPLANE_DISK_SIZE"
-        TF_VAR_worker_nodes_count: "$WORKER_NODES_COUNT"
-        TF_VAR_worker_cores: "$WORKER_CPU_CORES"
-        TF_VAR_worker_memory: "$WORKER_MEMORY"
-        TF_VAR_worker_disk_size: "$WORKER_DISK_SIZE"
+        TF_VAR_cluster_name: "${{ env.CLUSTER_NAME }}"
+        TF_VAR_controlplane_cores: "${{ env.CONTROLPLANE_CPU_CORES }}"
+        TF_VAR_controlplane_memory: "${{ env.CONTROLPLANE_MEMORY }}"
+        TF_VAR_controlplane_disk_size: "${{ env.CONTROLPLANE_DISK_SIZE }}"
+        TF_VAR_worker_nodes_count: "${{ env.WORKER_NODES_COUNT }}"
+        TF_VAR_worker_cores: "${{ env.WORKER_CPU_CORES }}"
+        TF_VAR_worker_memory: "${{ env.WORKER_MEMORY }}"
+        TF_VAR_worker_disk_size: "${{ env.WORKER_DISK_SIZE }}"
       run: |
         set +e
         terraform apply tfplan
@@ -114,6 +114,3 @@ jobs:
         name: kube-config
         path: /tmp/kube-config
         compression-level: 0
-
-    - name: Important Note
-      run: echo "After the workflow is completed, the cluster gets ready within minutes, depending on the count of the worker nodes."
