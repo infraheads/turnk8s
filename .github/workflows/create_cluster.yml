@@ -64,44 +64,10 @@ jobs:
 
     - name: Planning Terraform
       id: plan
-<<<<<<< Updated upstream
-      env:
-        TF_VAR_talos_version: "${{ env.TALOS_VERSION }}"
-        TF_VAR_k8s_version: "${{ env.K8S_VERSION }}"
-        TF_VAR_proxmox_ip: "${{ env.HOST_IP }}"
-        TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
-        TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
-        TF_VAR_cluster_name: "${{ env.CLUSTER_NAME }}"
-        TF_VAR_controlplane_cores: "${{ env.CONTROLPLANE_CPU_CORES }}"
-        TF_VAR_controlplane_memory: "${{ env.CONTROLPLANE_MEMORY }}"
-        TF_VAR_controlplane_disk_size: "${{ env.CONTROLPLANE_DISK_SIZE }}"
-        TF_VAR_worker_nodes_count: "${{ env.WORKER_NODES_COUNT }}"
-        TF_VAR_worker_cores: "${{ env.WORKER_CPU_CORES }}"
-        TF_VAR_worker_memory: "${{ env.WORKER_MEMORY }}"
-        TF_VAR_worker_disk_size: "${{ env.WORKER_DISK_SIZE }}"
-=======
->>>>>>> Stashed changes
       run: terraform plan -out=tfplan
 
     - name: Applying Terraform
       id: apply
-<<<<<<< Updated upstream
-      env:
-        TF_VAR_talos_version: "${{ env.TALOS_VERSION }}"
-        TF_VAR_k8s_version: "${{ env.K8S_VERSION }}"
-        TF_VAR_proxmox_ip: "${{ env.HOST_IP }}"
-        TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
-        TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
-        TF_VAR_cluster_name: "${{ env.CLUSTER_NAME }}"
-        TF_VAR_controlplane_cores: "${{ env.CONTROLPLANE_CPU_CORES }}"
-        TF_VAR_controlplane_memory: "${{ env.CONTROLPLANE_MEMORY }}"
-        TF_VAR_controlplane_disk_size: "${{ env.CONTROLPLANE_DISK_SIZE }}"
-        TF_VAR_worker_nodes_count: "${{ env.WORKER_NODES_COUNT }}"
-        TF_VAR_worker_cores: "${{ env.WORKER_CPU_CORES }}"
-        TF_VAR_worker_memory: "${{ env.WORKER_MEMORY }}"
-        TF_VAR_worker_disk_size: "${{ env.WORKER_DISK_SIZE }}"
-=======
->>>>>>> Stashed changes
       run: |
         set +e
         terraform apply tfplan
