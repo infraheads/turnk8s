@@ -5,7 +5,7 @@ on:
     branches:
       - 'master'
     paths:
-      - '.env'
+      - 'inputs.yaml'
       
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
@@ -23,8 +23,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
   
-    - name: Passing env file values to GITHUB_ENV
-      run: cat $GITHUB_WORKSPACE/.env >> $GITHUB_ENV 
+    - name: Extract values and set environment variables
+      uses: mikefarah/yq@master
+      with:
+        cmd: echo "CLUSTER_NAME=$(yq e '.CLUSTER_NAME' inputs.yaml)" >> $GITHUB_ENV
 
     - uses: hashicorp/setup-terraform@v3
       with:
@@ -62,6 +64,7 @@ jobs:
 
     - name: Planning Terraform
       id: plan
+<<<<<<< Updated upstream
       env:
         TF_VAR_talos_version: "${{ env.TALOS_VERSION }}"
         TF_VAR_k8s_version: "${{ env.K8S_VERSION }}"
@@ -76,10 +79,13 @@ jobs:
         TF_VAR_worker_cores: "${{ env.WORKER_CPU_CORES }}"
         TF_VAR_worker_memory: "${{ env.WORKER_MEMORY }}"
         TF_VAR_worker_disk_size: "${{ env.WORKER_DISK_SIZE }}"
+=======
+>>>>>>> Stashed changes
       run: terraform plan -out=tfplan
 
     - name: Applying Terraform
       id: apply
+<<<<<<< Updated upstream
       env:
         TF_VAR_talos_version: "${{ env.TALOS_VERSION }}"
         TF_VAR_k8s_version: "${{ env.K8S_VERSION }}"
@@ -94,6 +100,8 @@ jobs:
         TF_VAR_worker_cores: "${{ env.WORKER_CPU_CORES }}"
         TF_VAR_worker_memory: "${{ env.WORKER_MEMORY }}"
         TF_VAR_worker_disk_size: "${{ env.WORKER_DISK_SIZE }}"
+=======
+>>>>>>> Stashed changes
       run: |
         set +e
         terraform apply tfplan
