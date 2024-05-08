@@ -1,4 +1,4 @@
-cluster_name: test3
+cluster_name: talos-netris
 host_ip: 192.168.1.5
 registry: 192.168.2.52
 versions:
