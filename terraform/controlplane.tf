@@ -32,7 +32,7 @@ resource "proxmox_vm_qemu" "controlplane" {
   }
 
   network {
-    bridge   = var.controlplane_network_bridge
+    bridge   = local.input_vars.controlplane.network.bridge
     model    = var.controlplane_network_model
     firewall = var.controlplane_network_firewall
   }

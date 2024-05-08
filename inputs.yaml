@@ -8,8 +8,12 @@ controlplane:
   cpu_cores: 2
   memory: 4096
   disk_size: 20
+  network:
+    bridge: vmbr1
 worker:
   nodes_count: 1
   cpu_cores: 2
   memory: 4096
   disc_size: 20
+  network:
+    bridge: vmbr1
