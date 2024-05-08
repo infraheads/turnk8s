@@ -7,6 +7,7 @@ resource "talos_machine_secrets" "talos_secrets" {
 data "talos_machine_configuration" "cp_mc" {
   cluster_name       = proxmox_vm_qemu.controlplane.name
   machine_type       = "controlplane"
+#   cluster_endpoint   = "https://${local.cp_ip}:6443"
   cluster_endpoint   = "https://${local.cp_ip}:6443"
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.input_vars.versions.k8s
@@ -16,7 +17,7 @@ data "talos_machine_configuration" "cp_mc" {
       {
         talos-version      = local.input_vars.versions.talos,
         kubernetes-version = local.input_vars.versions.k8s,
-        registry           = var.talos_images_registry
+        registry           = local.input_vars.registry
       }
     )
   ]
@@ -75,7 +76,7 @@ data "talos_machine_configuration" "worker_mc" {
       {
         talos-version      = local.input_vars.versions.talos,
         kubernetes-version = local.input_vars.versions.k8s,
-        registry           = var.talos_images_registry
+        registry           = local.input_vars.registry
       }
     )
   ]
@@ -90,27 +91,29 @@ resource "talos_machine_configuration_apply" "worker_mca" {
 
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_mc[count.index].machine_configuration
-  node                        = try(
-    [
-      for line in split("\n", data.local_file.vm_ips.content):
-        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(proxmox_vm_qemu.worker[count.index].vmid)
-    ][0],
-    null
-  )
+#   node                        = try(
+#     [
+#       for line in split("\n", data.local_file.vm_ips.content):
+#         split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(proxmox_vm_qemu.worker[count.index].vmid)
+#     ][0],
+#     null
+#   )
+  node = proxmox_vm_qemu.worker[count.index].default_ipv4_address
 }
 
-data "talos_cluster_health" "cluster_health" {
-  depends_on = [data.talos_cluster_kubeconfig.cp_ck]
-  client_configuration = talos_machine_secrets.talos_secrets.client_configuration
-  control_plane_nodes  = [local.cp_ip]
-  worker_nodes = [
-    for line in split("\n", data.local_file.vm_ips.content):
-      split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[1] != tostring(local.cp_ip)
-  ]
-  endpoints = [local.cp_ip]
-  timeouts = {
-    read = "1h"
-  }
-}
+# data "talos_cluster_health" "cluster_health" {
+#   depends_on = [data.talos_cluster_kubeconfig.cp_ck]
+#   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
+#   control_plane_nodes  = [local.cp_ip]
+# #   worker_nodes = [
+# #     for line in split("\n", data.local_file.vm_ips.content):
+# #       split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[1] != tostring(local.cp_ip)
+# #   ]
+#   worker_nodes = proxmox_vm_qemu.worker.*.default_ipv4_address
+#   endpoints = [local.cp_ip]
+#   timeouts = {
+#     read = "1h"
+#   }
+# }
 
 

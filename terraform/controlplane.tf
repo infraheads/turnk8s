@@ -16,6 +16,7 @@ resource "proxmox_vm_qemu" "controlplane" {
   qemu_os = var.controlplane_qemu_os
   scsihw  = var.controlplane_scsihw
   memory  = local.input_vars.controlplane.memory
+  agent   = 1
 
   disks {
     scsi {

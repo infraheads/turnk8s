@@ -22,10 +22,18 @@ terraform {
       source  = "hashicorp/random"
       version = "3.6.0"
     }
-    local = {
-      source  = "hashicorp/local"
-      version = "2.5.1"
-    }
+#     local = {
+#       source  = "hashicorp/local"
+#       version = "2.5.1"
+#     }
+#     helm = {
+#       source  = "hashicorp/helm"
+#       version = ">= 2.13"
+#     }
+#     kubernetes = {
+#       source  = "hashicorp/kubernetes"
+#       version = ">= 2.29"
+#     }
   }
 
   # ##  Used for end-to-end testing on project; update to suit your needs

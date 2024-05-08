@@ -1,5 +1,6 @@
 cluster_name: test3
 host_ip: 192.168.1.5
+registry: 192.168.2.52
 versions:
   talos: v1.7.1
   k8s: v1.30.0
