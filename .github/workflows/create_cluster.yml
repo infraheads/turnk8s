@@ -10,6 +10,8 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+  TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
+  TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
 
 jobs:
   creating_cluster:
