@@ -1,6 +1,6 @@
-cluster_name: talos-netris
+cluster_name: taalos-netris
 host_ip: 192.168.1.5
-registry: 192.168.2.52
+registry: "http://192.168.2.4:6000"
 versions:
   talos: v1.7.1
   k8s: v1.30.0
