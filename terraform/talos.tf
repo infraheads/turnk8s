@@ -11,7 +11,7 @@ data "talos_machine_configuration" "cp_mc" {
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.input_vars.versions.k8s
   talos_version      = local.input_vars.versions.talos
-  config_patches     = [
+  config_patches = [
     templatefile("${path.module}/templates/controlplane.yaml.tpl",
       {
         talos-version      = local.input_vars.versions.talos,
@@ -70,7 +70,7 @@ data "talos_machine_configuration" "worker_mc" {
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.input_vars.versions.k8s
   talos_version      = local.input_vars.versions.talos
-  config_patches     = [
+  config_patches = [
     templatefile("${path.module}/templates/worker.yaml.tpl",
       {
         talos-version      = local.input_vars.versions.talos,
@@ -83,29 +83,29 @@ data "talos_machine_configuration" "worker_mc" {
 
 # Applies machine configuration to the worker node
 resource "talos_machine_configuration_apply" "worker_mca" {
-  count      = var.worker_nodes_count
+  count = var.worker_nodes_count
   depends_on = [
     proxmox_vm_qemu.worker
   ]
 
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_mc[count.index].machine_configuration
-  node                        = try(
+  node = try(
     [
-      for line in split("\n", data.local_file.vm_ips.content):
-        split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(proxmox_vm_qemu.worker[count.index].vmid)
+      for line in split("\n", data.local_file.vm_ips.content) :
+      split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[0] == tostring(proxmox_vm_qemu.worker[count.index].vmid)
     ][0],
     null
   )
 }
 
 data "talos_cluster_health" "cluster_health" {
-  depends_on = [data.talos_cluster_kubeconfig.cp_ck]
+  depends_on           = [data.talos_cluster_kubeconfig.cp_ck]
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
   control_plane_nodes  = [local.cp_ip]
   worker_nodes = [
-    for line in split("\n", data.local_file.vm_ips.content):
-      split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[1] != tostring(local.cp_ip)
+    for line in split("\n", data.local_file.vm_ips.content) :
+    split(" ", line)[1] if length(split(" ", line)) > 1 && split(" ", line)[1] != tostring(local.cp_ip)
   ]
   endpoints = [local.cp_ip]
   timeouts = {

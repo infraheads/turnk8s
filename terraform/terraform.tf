@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.7"
   backend "remote" {
-    hostname = "app.terraform.io"
+    hostname     = "app.terraform.io"
     organization = "infraheads"
 
     workspaces {

@@ -1,6 +1,6 @@
 resource "local_file" "vm_ips" {
-  filename   = local.ip_filename
-  content = ""
+  filename = local.ip_filename
+  content  = ""
 }
 
 resource "terraform_data" "vm_ips" {

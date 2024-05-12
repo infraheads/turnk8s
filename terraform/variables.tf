@@ -1,43 +1,43 @@
 variable "talos_version" {
   description = "Talos version to be used"
-  type = string
-  default = "v1.7.1"
+  type        = string
+  default     = "v1.7.1"
 }
 
 variable "talos_images_registry" {
   description = "The registry from which images should be downloaded for cluster"
-  type = string
-  default = "http://192.168.1.40:6000"
+  type        = string
+  default     = "http://192.168.1.6:6000"
 }
 
 variable "k8s_version" {
   description = "K8s version to be used"
-  type = string
-  default = "v1.30.0"
+  type        = string
+  default     = "v1.30.0"
 }
 
 variable "proxmox_ip" {
   description = "IP of the Proxmox server"
-  type = string
-  default = "192.168.1.1"
+  type        = string
+  default     = "192.168.1.1"
 }
 
 variable "proxmox_token_id" {
   description = "This is an API token you have previously created for a specific user."
-  type = string
-  nullable = false
+  type        = string
+  nullable    = false
 }
 
 variable "proxmox_token_secret" {
   description = "This uuid is only available when the token was initially created."
-  type = string
-  nullable = false
+  type        = string
+  nullable    = false
 }
 
 variable "cluster_name" {
   description = "The name of the cluster."
-  type = string
-  default = "Test"
+  type        = string
+  default     = "Test"
 }
 
 variable "controlplane_cores" {
@@ -109,8 +109,8 @@ variable "controlplane_disk_size" {
 # Node variables
 variable "worker_nodes_count" {
   description = "Count of the Worker Nodes."
-  type = number
-  default = 1
+  type        = number
+  default     = 1
 }
 
 variable "worker_cores" {
