@@ -1,4 +1,4 @@
-cluster_name: destroy-test
+cluster_name: test-destroy
 host_ip: 192.168.1.21
 versions:
   talos: v1.7.1
