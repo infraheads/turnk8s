@@ -7,3 +7,11 @@ provider "proxmox" {
 }
 
 provider "random" {}
+
+provider "kubernetes" {
+  host = data.talos_cluster_kubeconfig.cp_ck.kubernetes_client_configuration.host
+
+  client_certificate     = data.talos_cluster_kubeconfig.cp_ck.kubernetes_client_configuration.client_certificate
+  client_key             = data.talos_cluster_kubeconfig.cp_ck.kubernetes_client_configuration.client_key
+  cluster_ca_certificate = data.talos_cluster_kubeconfig.cp_ck.kubernetes_client_configuration.ca_certificate
+}

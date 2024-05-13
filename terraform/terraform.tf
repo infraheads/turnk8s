@@ -26,6 +26,10 @@ terraform {
       source  = "hashicorp/local"
       version = "2.5.1"
     }
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+      version = "2.30.0"
+    }
   }
 
   # ##  Used for end-to-end testing on project; update to suit your needs
