@@ -7,7 +7,7 @@ variable "talos_version" {
 variable "talos_images_registry" {
   description = "The registry from which images should be downloaded for cluster"
   type = string
-  default = "http://192.168.2.52:6000"
+  default = "http://192.168.1.11:6000"
 }
 
 variable "k8s_version" {
@@ -25,13 +25,13 @@ variable "proxmox_ip" {
 variable "proxmox_token_id" {
   description = "This is an API token you have previously created for a specific user."
   type = string
-  nullable = false
+  sensitive = true
 }
 
 variable "proxmox_token_secret" {
   description = "This uuid is only available when the token was initially created."
   type = string
-  nullable = false
+  sensitive = true
 }
 
 variable "cluster_name" {
@@ -91,7 +91,7 @@ variable "controlplane_network_model" {
 variable "controlplane_network_firewall" {
   description = "Whether to enable the Proxmox firewall on this network device."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "controlplane_disk_storage" {
@@ -164,7 +164,7 @@ variable "worker_network_model" {
 variable "worker_network_firewall" {
   description = "Whether to enable the Proxmox firewall on this network device."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "worker_disk_storage" {
@@ -179,33 +179,11 @@ variable "worker_disk_size" {
   default     = 32
 }
 
-variable "git_private_ssh_key" {
-  description = "SSH key path for git access"
-  type        = string
-}
-
-variable "git_repository_ssh_url" {
-  description = "Git repository ssh url contains for workload"
-  type        = string
-  default     = "git@github.com:hakobian4/microservices-demo-deployment.git"
-}
-
-variable "workloads_path" {
-  description = "Workloads file location in git."
-  type        = string
-  default     = "bootstrap/workloads"
-}
-
-variable "argocd_ingress_hostname" {
-  description = "Hostname for accessing to ArgoCD application."
+variable "github_token" {
+  description = "Git repository token"
   type = string
-  default = "argocd.example.com"
 }
 
-variable "argocd_ingress_class_name" {
-  type = string
-  default = "nginx"
-}
 # ArgoCD variables
 variable "argocd_chart_name" {
   type = string
@@ -214,7 +192,7 @@ variable "argocd_chart_name" {
 
 variable "argocd_chart_version" {
   type = string
-  default = "6.6.0"
+  default = "6.7.18"
 }
 
 variable "argocd_chart_repository" {
@@ -241,4 +219,23 @@ variable "argocd_app_of_apps_chart_version" {
 variable "argocd_app_of_apps_chart_repository" {
   type = string
   default = "https://argoproj.github.io/argo-helm"
+}
+
+# Netris Configuration
+variable "netris_controller_host" {
+  description = "Netris controller host."
+  type = string
+  sensitive = true
+}
+
+variable "netris_controller_login" {
+  description = "Netris controller login"
+  type = string
+  sensitive = true
+}
+
+variable "netris_controller_password" {
+  description = "Netris controller password"
+  type = string
+  sensitive = true
 }
