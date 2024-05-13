@@ -3,7 +3,7 @@ name: 'Create a Cluster'
 on:
   push:
     branches:
-      - 'talos-netris'
+      - 'master'
     paths:
       - 'inputs.yaml'
       
