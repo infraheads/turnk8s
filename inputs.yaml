@@ -1,5 +1,5 @@
-cluster_name: destroy-test
-host_ip: 192.168.1.21
+cluster_name: davit-test
+host_ip: 192.168.1.5
 versions:
   talos: v1.7.1
   k8s: v1.30.0
