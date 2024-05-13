@@ -9,7 +9,7 @@ resource "proxmox_vm_qemu" "worker" {
   count = local.input_vars.worker.nodes_count
 
   name        = "${local.input_vars.cluster_name}-worker-${count.index}-${random_integer.wn_vm_id[count.index].result}"
-  target_node = "pve01"
+  target_node = local.proxmox_target_node
   iso         = local.talos_iso
   vmid        = random_integer.wn_vm_id[count.index].result
 

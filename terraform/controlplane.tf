@@ -5,7 +5,7 @@ resource "random_integer" "cp_vm_id" {
 
 resource "proxmox_vm_qemu" "controlplane" {
   name        = "${local.input_vars.cluster_name}-cp-${random_integer.cp_vm_id.result}"
-  target_node = "pve01"
+  target_node = local.proxmox_target_node
   iso         = local.talos_iso
   vmid        = random_integer.cp_vm_id.result
 

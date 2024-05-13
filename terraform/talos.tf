@@ -7,8 +7,7 @@ resource "talos_machine_secrets" "talos_secrets" {
 data "talos_machine_configuration" "cp_mc" {
   cluster_name       = proxmox_vm_qemu.controlplane.name
   machine_type       = "controlplane"
-#   cluster_endpoint   = "https://${local.cp_ip}:6443"
-  cluster_endpoint   = "https://${local.cp_ip}:6443"
+  cluster_endpoint   = "https://${proxmox_vm_qemu.controlplane.default_ipv4_address}:6443"
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = local.input_vars.versions.k8s
   talos_version      = local.input_vars.versions.talos
@@ -28,8 +27,8 @@ data "talos_client_configuration" "cp_cc" {
   depends_on           = [proxmox_vm_qemu.controlplane]
   cluster_name         = data.talos_machine_configuration.cp_mc.cluster_name
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
-  nodes                = [local.cp_ip]
-  endpoints            = [local.cp_ip]
+  nodes                = [proxmox_vm_qemu.controlplane.default_ipv4_address]
+  endpoints            = [proxmox_vm_qemu.controlplane.default_ipv4_address]
 }
 
 # Applies machine configuration to the control plane
@@ -39,7 +38,7 @@ resource "talos_machine_configuration_apply" "cp_mca" {
   ]
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.cp_mc.machine_configuration
-  node                        = local.cp_ip
+  node                        = proxmox_vm_qemu.controlplane.default_ipv4_address
 }
 
 # Bootstraps the etcd cluster on the control plane
@@ -47,7 +46,7 @@ resource "talos_machine_bootstrap" "cp_mb" {
   depends_on = [
     talos_machine_configuration_apply.cp_mca
   ]
-  node                 = local.cp_ip
+  node                 = proxmox_vm_qemu.controlplane.default_ipv4_address
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
 
 }
@@ -58,12 +57,12 @@ data "talos_cluster_kubeconfig" "cp_ck" {
     talos_machine_bootstrap.cp_mb
   ]
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
-  node                 = local.cp_ip
+  node                 = proxmox_vm_qemu.controlplane.default_ipv4_address
 }
 
 # Generates a machine configuration for the worker (worker.yaml)
 data "talos_machine_configuration" "worker_mc" {
-  count = var.worker_nodes_count
+  count = local.input_vars.worker.nodes_count
 
   cluster_name       = proxmox_vm_qemu.worker[count.index].name
   machine_type       = "worker"
@@ -84,22 +83,22 @@ data "talos_machine_configuration" "worker_mc" {
 
 # Applies machine configuration to the worker node
 resource "talos_machine_configuration_apply" "worker_mca" {
-  count      = var.worker_nodes_count
+  count      = local.input_vars.worker.nodes_count
   depends_on = [
     proxmox_vm_qemu.worker
   ]
 
   client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
   machine_configuration_input = data.talos_machine_configuration.worker_mc[count.index].machine_configuration
-  node = proxmox_vm_qemu.worker[count.index].default_ipv4_address
+  node                        = proxmox_vm_qemu.worker[count.index].default_ipv4_address
 }
 
 data "talos_cluster_health" "cluster_health" {
-  depends_on = [data.talos_cluster_kubeconfig.cp_ck]
+  depends_on           = [data.talos_cluster_kubeconfig.cp_ck]
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
-  control_plane_nodes  = [local.cp_ip]
-  worker_nodes = proxmox_vm_qemu.worker.*.default_ipv4_address
-  endpoints = [local.cp_ip]
+  control_plane_nodes  = [proxmox_vm_qemu.controlplane.default_ipv4_address]
+  worker_nodes         = proxmox_vm_qemu.worker.*.default_ipv4_address
+  endpoints            = [proxmox_vm_qemu.controlplane.default_ipv4_address]
   timeouts = {
     read = "1h"
   }
