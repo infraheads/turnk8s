@@ -1,0 +1,12 @@
+configs:
+  params:
+    server.insecure: true
+server:
+#  ingress:
+#    enabled: true
+#  metrics:
+#    enabled: true
+#    serviceMonitor:
+#      enabled: true
+  service:
+    type: "LoadBalancer"
