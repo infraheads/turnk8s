@@ -20,6 +20,7 @@ resource "proxmox_vm_qemu" "worker" {
   qemu_os = var.worker_qemu_os
   scsihw  = var.worker_scsihw
   memory  = local.input_vars.worker.memory
+  agent   = 1
 
   disks {
     scsi {
@@ -35,7 +36,7 @@ resource "proxmox_vm_qemu" "worker" {
   }
 
   network {
-    bridge   = var.worker_network_bridge
+    bridge   = local.input_vars.worker.network.bridge
     model    = var.worker_network_model
     firewall = var.worker_network_firewall
   }

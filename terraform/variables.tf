@@ -7,7 +7,7 @@ variable "talos_version" {
 variable "talos_images_registry" {
   description = "The registry from which images should be downloaded for cluster"
   type        = string
-  default     = "http://192.168.1.6:6000"
+  default     = "http://192.168.1.11:6000"
 }
 
 variable "k8s_version" {
@@ -25,13 +25,13 @@ variable "proxmox_ip" {
 variable "proxmox_token_id" {
   description = "This is an API token you have previously created for a specific user."
   type        = string
-  nullable    = false
+  sensitive   = true
 }
 
 variable "proxmox_token_secret" {
   description = "This uuid is only available when the token was initially created."
   type        = string
-  nullable    = false
+  sensitive   = true
 }
 
 variable "cluster_name" {
@@ -79,7 +79,7 @@ variable "controlplane_memory" {
 variable "controlplane_network_bridge" {
   description = "Bridge to which the network device should be attached."
   type        = string
-  default     = "vmbr0"
+  default     = "vmbr1"
 }
 
 variable "controlplane_network_model" {
@@ -91,7 +91,7 @@ variable "controlplane_network_model" {
 variable "controlplane_network_firewall" {
   description = "Whether to enable the Proxmox firewall on this network device."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "controlplane_disk_storage" {
@@ -152,7 +152,7 @@ variable "worker_memory" {
 variable "worker_network_bridge" {
   description = "Bridge to which the network device should be attached."
   type        = string
-  default     = "vmbr0"
+  default     = "vmbr1"
 }
 
 variable "worker_network_model" {
@@ -164,7 +164,7 @@ variable "worker_network_model" {
 variable "worker_network_firewall" {
   description = "Whether to enable the Proxmox firewall on this network device."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "worker_disk_storage" {
@@ -177,4 +177,64 @@ variable "worker_disk_size" {
   description = "The size of the created disk in Gigabytes."
   type        = number
   default     = 32
+}
+
+variable "github_token" {
+  description = "Git repository token"
+  type        = string
+}
+
+# ArgoCD variables
+variable "argocd_chart_name" {
+  type    = string
+  default = "argo-cd"
+}
+
+variable "argocd_chart_version" {
+  type    = string
+  default = "6.7.18"
+}
+
+variable "argocd_chart_repository" {
+  type    = string
+  default = "https://argoproj.github.io/argo-helm"
+}
+
+variable "argocd_admin_password" {
+  description = "Encrypted password for Argocd admin"
+  type        = string
+}
+
+# ArgoCD Apps variables
+variable "argocd_app_of_apps_chart_name" {
+  type    = string
+  default = "argocd-apps"
+}
+
+variable "argocd_app_of_apps_chart_version" {
+  type    = string
+  default = "1.6.2"
+}
+
+variable "argocd_app_of_apps_chart_repository" {
+  type    = string
+  default = "https://argoproj.github.io/argo-helm"
+}
+
+# Netris Configuration
+variable "netris_controller_host" {
+  description = "Netris controller host."
+  type        = string
+}
+
+variable "netris_controller_login" {
+  description = "Netris controller login"
+  type        = string
+  sensitive   = true
+}
+
+variable "netris_controller_password" {
+  description = "Netris controller password"
+  type        = string
+  sensitive   = true
 }

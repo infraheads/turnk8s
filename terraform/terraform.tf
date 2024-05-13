@@ -22,9 +22,13 @@ terraform {
       source  = "hashicorp/random"
       version = "3.6.0"
     }
-    local = {
-      source  = "hashicorp/local"
-      version = "2.5.1"
+    github = {
+      source  = "integrations/github"
+      version = "6.2.1"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.13"
     }
   }
 

@@ -16,6 +16,7 @@ resource "proxmox_vm_qemu" "controlplane" {
   qemu_os = var.controlplane_qemu_os
   scsihw  = var.controlplane_scsihw
   memory  = local.input_vars.controlplane.memory
+  agent   = 1
 
   disks {
     scsi {
@@ -31,7 +32,7 @@ resource "proxmox_vm_qemu" "controlplane" {
   }
 
   network {
-    bridge   = var.controlplane_network_bridge
+    bridge   = local.input_vars.controlplane.network.bridge
     model    = var.controlplane_network_model
     firewall = var.controlplane_network_firewall
   }

@@ -3,7 +3,7 @@ name: 'Create a Cluster'
 on:
   push:
     branches:
-      - 'master'
+      - 'talos-netris'
     paths:
       - 'inputs.yaml'
       
@@ -12,6 +12,10 @@ env:
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
   TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+  TF_VAR_github_token: "${{ secrets.TOKEN_GITHUB }}"
+  TF_VAR_netris_controller_host: "${{ vars.NETRIS_CONTROLLER_HOST }}"
+  TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
+  TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
 
 jobs:
   creating_cluster:
