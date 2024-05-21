@@ -14,6 +14,21 @@ resource "helm_release" "argocd" {
     name  = "configs.secret.argocdServerAdminPassword"
     value = var.argocd_admin_password
   }
+
+  set {
+    name  = "global.image.repository"
+    value = "${var.registry}/argoproj/argocd"
+  }
+
+  set {
+    name  = "dex.image.repository"
+    value = "${var.registry}/dexidp/dex"
+  }
+
+  set {
+    name  = "redis.image.repository"
+    value = "${var.registry}/docker/library/redis"
+  }
 }
 
 resource "helm_release" "argocd-apps" {

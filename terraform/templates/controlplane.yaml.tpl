@@ -7,7 +7,7 @@ machine:
         mirrors:
             '*':
                 endpoints:
-                    - ${registry}
+                    - http://${registry}
 cluster:
     apiServer:
         image: registry.k8s.io/kube-apiserver:${kubernetes-version}

@@ -36,7 +36,7 @@ resource "proxmox_vm_qemu" "worker" {
   }
 
   network {
-    bridge   = local.input_vars.worker.network.bridge
+    bridge   = var.worker_network_bridge
     model    = var.worker_network_model
     firewall = var.worker_network_firewall
   }

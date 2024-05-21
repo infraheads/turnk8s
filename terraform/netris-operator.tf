@@ -29,4 +29,14 @@ resource "helm_release" "netris-operator" {
     name  = "controller.insecure"
     value = false
   }
+
+  set {
+    name  = "image.repository"
+    value = "${var.image_registry}/netris-operator"
+  }
+
+  set {
+    name  = "image.tag"
+    value = "v3.0.0"
+  }
 }

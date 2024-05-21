@@ -4,10 +4,10 @@ variable "talos_version" {
   default     = "v1.7.1"
 }
 
-variable "talos_images_registry" {
+variable "image_registry" {
   description = "The registry from which images should be downloaded for cluster"
   type        = string
-  default     = "http://192.168.1.11:6000"
+  default     = "192.168.2.4:6000"
 }
 
 variable "k8s_version" {
@@ -19,7 +19,7 @@ variable "k8s_version" {
 variable "proxmox_ip" {
   description = "IP of the Proxmox server"
   type        = string
-  default     = "192.168.1.1"
+  default     = "192.168.1.5"
 }
 
 variable "proxmox_token_id" {

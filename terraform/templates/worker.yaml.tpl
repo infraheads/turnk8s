@@ -7,4 +7,4 @@ machine:
         mirrors:
             '*':
                 endpoints:
-                    - ${registry}
+                    - http://${registry}

@@ -16,7 +16,7 @@ data "talos_machine_configuration" "cp_mc" {
       {
         talos-version      = local.input_vars.versions.talos,
         kubernetes-version = local.input_vars.versions.k8s,
-        registry           = local.input_vars.registry
+        registry           = var.image_registry
       }
     )
   ]
@@ -75,7 +75,7 @@ data "talos_machine_configuration" "worker_mc" {
       {
         talos-version      = local.input_vars.versions.talos,
         kubernetes-version = local.input_vars.versions.k8s,
-        registry           = local.input_vars.registry
+        registry           = var.image_registry
       }
     )
   ]
