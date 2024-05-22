@@ -7,7 +7,7 @@
     memory: 4096
     disk_size: 20
   worker_node:
-    count: 1
+    count: 2
     cpu_cores: 2
     memory: 4096
     disc_size: 20
