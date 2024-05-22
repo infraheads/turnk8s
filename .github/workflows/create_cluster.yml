@@ -35,7 +35,7 @@ jobs:
     - name: Extract values and set environment variables
       id: workspaces
       run: |
-        echo "::set-output workspaces=$(yq e '.[].cluster_name' inputs.yaml | jq -R -s -c 'split("\n")[:-1]')"
+        echo "::set-output name=workspaces::$(yq e '.[].cluster_name' inputs.yaml | jq -R -s -c 'split("\n")[:-1]')"
         
 
     - uses: hashicorp/setup-terraform@v3
