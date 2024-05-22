@@ -63,7 +63,7 @@ jobs:
         working-directory: "terraform"
     strategy:
       matrix:
-        workspaces: ${{ needs.setup_terraform.outputs.WORKSPACES }}
+        workspaces: ${{ needs.setup_terraform.outputs.workspaces }}
     steps:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
