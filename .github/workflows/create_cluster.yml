@@ -28,17 +28,14 @@ jobs:
       run:
         working-directory: "terraform"
     outputs:
-      workspaces: ${{steps.workspaces.outputs.WORKSPACES}}
+      workspaces: ${{steps.workspaces.outputs.workspaces}}
     steps:
     - uses: actions/checkout@v4
   
     - name: Extract values and set environment variables
-      uses: mikefarah/yq@master
       id: workspaces
-      with:
-        cmd: |
-          echo "workspaces=$(yq e '.[].cluster_name' inputs.yaml | jq -R -s -c 'split("\n")[:-1]')"
-          echo "::set-output name=workspaces::$workspaces"
+      run: |
+        echo "workspaces=$(yq e '.[].cluster_name' inputs.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
     - uses: hashicorp/setup-terraform@v3
       with:
