@@ -36,7 +36,7 @@ jobs:
       uses: mikefarah/yq@master
       id: workspaces
       with:
-        cmd: echo "WORKSPACES=$(yq e '.[].cluster_name' inputs.yaml | paste -sd "," -)" >> $GITHUB_ENV
+        cmd: echo "WORKSPACES=$(yq e '.[].cluster_name' inputs.yaml | paste -sd "," -)" >> $GITHUB_OUTPUT
 
     - uses: hashicorp/setup-terraform@v3
       with:
@@ -44,7 +44,7 @@ jobs:
         terraform_version: 1.7.5
 
     - name: Configure Terraform Cache
-      run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_OUTPUT"
+      run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
 
     - name: Initializing Terraform
       id: init
