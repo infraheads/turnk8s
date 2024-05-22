@@ -3,7 +3,7 @@ turnk8s
 
 ## Introduction
 
-The purpose of this task is run Kubernetes service based on `yaml` configuration file. Clusters are run in [Talos Linux](https://www.talos.dev) on [Proxmox](https://www.proxmox.com) server. 
+**turnk8s** is run Kubernetes service based on `yaml` configuration file. Clusters are run in [Talos Linux](https://www.talos.dev) on [Proxmox](https://www.proxmox.com) server. 
 For each cluster is created GitHub repository which contains Kubernetes manifests are managed by ArgoCD.  
 
 
