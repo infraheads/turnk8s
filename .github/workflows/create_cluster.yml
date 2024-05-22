@@ -96,5 +96,3 @@ jobs:
 #        name: kube-config
 #        path: /tmp/kube-config
 #        compression-level: 0
-
-
