@@ -60,7 +60,7 @@ jobs:
         working-directory: "terraform"
     strategy:
       matrix:
-        workspaces: $WORKSPACES
+        workspaces: [$WORKSPACES]
     steps:
     - name: Selecting Terraform Workspace
       id: workspace
