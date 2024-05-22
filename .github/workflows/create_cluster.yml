@@ -60,8 +60,14 @@ jobs:
         working-directory: "terraform"
     strategy:
       matrix:
-        workspaces: [$WORKSPACES]
+        workspaces: [${{ env.WORKSPACES }}]
     steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_version: 1.7.5
+
     - name: Selecting Terraform Workspace
       id: workspace
       run: terraform workspace select -or-create ${{ matrix.workspaces }}
