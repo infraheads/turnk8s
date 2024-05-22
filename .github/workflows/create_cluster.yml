@@ -1,9 +1,9 @@
-name: 'Create a Cluster'
+name: 'Apply Terraform'
 
 on:
   push:
     branches:
-      - 'master'
+      - 'multiple-cluster'
     paths:
       - 'inputs.yaml'
       
@@ -19,7 +19,7 @@ env:
   TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
 
 jobs:
-  creating_cluster:
+  setup_terraform:
     runs-on: self-hosted
     permissions:
       contents: read
@@ -33,7 +33,7 @@ jobs:
     - name: Extract values and set environment variables
       uses: mikefarah/yq@master
       with:
-        cmd: echo "CLUSTER_NAME=$(yq e '.cluster_name' inputs.yaml)" >> $GITHUB_ENV
+        cmd: echo "WORKSPACES=$(yq e '.[].cluster_name' inputs.yaml)" >> $GITHUB_ENV
 
     - uses: hashicorp/setup-terraform@v3
       with:
@@ -49,22 +49,23 @@ jobs:
       env:
         TF_WORKSPACE: "default-ws"
 
+  run_terraform:
+    needs: setup_terraform
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform"
+    strategy:
+      matrix:
+        workspaces: ${{ WORKSPACES }}
+    steps:
     - name: Selecting Terraform Workspace
       id: workspace
-      run: |
-        set +e
-        terraform workspace new $CLUSTER_NAME
-        tf_exitcode=$?
-        set -e
-        if [ $tf_exitcode -ne 0 ]; 
-        then
-          echo """
-            Error: Cluster already exists.
-            Message: There is already a cluster with the name '$CLUSTER_NAME'. The cluster name MUST BE unique.
-            """
-          exit 1
-        fi
-      
+      run: terraform workspace select -or-create ${{ matrix.workspaces }}
+
     - name: Validating Terraform
       id: validate
       run: terraform validate -no-color
@@ -89,9 +90,11 @@ jobs:
         exit 1
         fi
 
-    - name: Generating kube-config
-      uses: actions/upload-artifact@v4
-      with:
-        name: kube-config
-        path: /tmp/kube-config
-        compression-level: 0
+#    - name: Generating kube-config
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: kube-config
+#        path: /tmp/kube-config
+#        compression-level: 0
+
+

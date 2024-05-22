@@ -18,10 +18,6 @@ terraform {
       source  = "siderolabs/talos"
       version = "0.5.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "3.6.0"
-    }
     github = {
       source  = "integrations/github"
       version = "6.2.1"

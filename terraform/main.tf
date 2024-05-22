@@ -5,8 +5,6 @@ provider "proxmox" {
   pm_tls_insecure     = true
 }
 
-provider "random" {}
-
 provider "github" {
   token = var.github_token
   owner = "infraheads"

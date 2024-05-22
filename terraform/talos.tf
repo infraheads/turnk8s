@@ -62,7 +62,7 @@ data "talos_cluster_kubeconfig" "cp_ck" {
 
 # Generates a machine configuration for the worker (worker.yaml)
 data "talos_machine_configuration" "worker_mc" {
-  count = local.input_vars.worker.nodes_count
+  count = local.input_vars.worker_node.count
 
   cluster_name       = proxmox_vm_qemu.worker[count.index].name
   machine_type       = "worker"
@@ -83,7 +83,7 @@ data "talos_machine_configuration" "worker_mc" {
 
 # Applies machine configuration to the worker node
 resource "talos_machine_configuration_apply" "worker_mca" {
-  count      = local.input_vars.worker.nodes_count
+  count      = local.input_vars.worker_node.count
   depends_on = [
     proxmox_vm_qemu.worker
   ]

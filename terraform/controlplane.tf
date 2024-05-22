@@ -1,13 +1,7 @@
-resource "random_integer" "cp_vm_id" {
-  max = 999999999
-  min = 100000000
-}
-
 resource "proxmox_vm_qemu" "controlplane" {
-  name        = "${local.input_vars.cluster_name}-cp-${random_integer.cp_vm_id.result}"
+  name        = "${local.input_vars.cluster_name}-cp"
   target_node = local.proxmox_target_node
   iso         = local.talos_iso
-  vmid        = random_integer.cp_vm_id.result
 
   cores   = local.input_vars.controlplane.cpu_cores
   sockets = var.controlplane_sockets

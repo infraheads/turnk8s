@@ -1,13 +1,13 @@
-cluster_name: demotalos
-versions:
-  talos: v1.7.1
-  k8s: v1.30.0
-controlplane:
-  cpu_cores: 2
-  memory: 4096
-  disk_size: 20
-worker:
-  nodes_count: 1
-  cpu_cores: 2
-  memory: 4096
-  disc_size: 20
+- cluster_name: new
+  versions:
+    talos: v1.7.1
+    k8s: v1.30.0
+  controlplane:
+    cpu_cores: 2
+    memory: 4096
+    disk_size: 20
+  worker_node:
+    count: 1
+    cpu_cores: 2
+    memory: 4096
+    disc_size: 20
