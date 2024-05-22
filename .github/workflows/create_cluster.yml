@@ -33,7 +33,7 @@ jobs:
     - name: Extract values and set environment variables
       uses: mikefarah/yq@master
       with:
-        cmd: echo "WORKSPACES=$(yq e '.[].cluster_name' inputs.yaml)" >> $GITHUB_ENV
+        cmd: echo "WORKSPACES=$(yq e '.[].cluster_name' inputs.yaml | paste -sd "," -)" >> $GITHUB_ENV
 
     - uses: hashicorp/setup-terraform@v3
       with:
