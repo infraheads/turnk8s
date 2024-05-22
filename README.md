@@ -1,61 +1,67 @@
-Kubernetes in Talos Linux on Proxmox Server
+turnk8s
 =================
 
 ## Introduction
 
-The purpose of this task is run Kubernetes service in Talos Linux on Proxmox server.
-
-
-## Overview
-
-The task is divided into following stages:
-
-* Set the desirable values into `workflow_dispatch` of Github and run workflow to create a Cluster (this step is not automated).
-* Setting up Proxmox VMs installed Talos Linux.
-    * created VMs depends on previous step
-    * one for control plane and the rest for worker nodes
-    * generated Talos configuration for each VM and applied them to config VMs as control plane and worker node(s).
-* After creating the Cluster, when Kubernetes is installed, download the `kubeconfig artifact` for connecting to the Kubernetes server.
+The purpose of this task is run Kubernetes service based on `yaml` configuration file. Clusters are run in [Talos Linux](https://www.talos.dev) on [Proxmox](https://www.proxmox.com) server. 
+For each cluster is created GitHub repository which contains Kubernetes manifests are managed by ArgoCD.  
 
 
 ## GitHub
 
-It is possible to manage cluster(s) from GitHub UI. You can create or destroy cluster(s) by one click.
+It is possible to manage cluster(s) via the `inputs.yaml` configuration file. You can create or destroy cluster(s) 
+by changing the configuration file.
+<details>
+  <summary>Click here to see the structure of configuration file:</summary>
+
+```yaml
+- cluster_name: turnk8s-cluster
+  versions:
+    talos: v1.7.1
+    k8s: v1.30.0
+  controlplane:
+    cpu_cores: 2
+    memory: 4096
+    disk_size: 20
+  worker_node:
+    count: 2
+    cpu_cores: 2
+    memory: 4096
+    disc_size: 20
+```
+</details>
+
 
 ### Creating a Cluster
-For creating a cluster you need to configure some variables in workflow. To run the workflow 
-go to **Actions>Create a Cluster>Run workflow** 
+For creating a cluster you need to configure `inputs.yaml` configuration file by adding the above structure into inputs.yaml file.  
 
-There are some necessary variables shown in bellow:
-* **ClusterName:(Required)** - the cluster name which must be unique
-* **ControlPlaneCPU:(Optional)** - CPU cores count of the ControlPlane
-* **ControlPlaneMemory:(Optional)** - RAM memory of the ControlPlane
-* **ControlPlaneDiskSize:(Optional)** - Disk size of the ControlPlane
-* **WorkerNodesCount:(Optional)** - Count of the Worker Nodes
-* **WorkerNodeCPU:(Optional)** - CPU cores count of the Worker Node
-* **WorkerNodeMemory:(Optional)** - RAM memory of the Worker Node
-* **WorkerNodeDiskSize:(Optional)** - Disk size of the Worker Node
+Here is the descriptions of the configuration values:
+* **cluster_name:(Required)** - The cluster name which must be unique
+* **versions.talos:(Required)** - Talos Linux version: the possible versions are v1.7.1, v1.7.1, v1.6.7
+* **versions.k8s:(Required)** - Kubernetes version: the possible versions are v1.30.0, v1.29.3, v1.6.7
+* **controlplane.cpu_cores:(Required)** - CPU cores count of the ControlPlane:(minimum requirement count is 2)
+* **controlplane.memory:(Required)** - RAM memory of the ControlPlane:(minimum requirement size is 2048)
+* **controlplane.disk_size:(Required)** - Disk size of the ControlPlane:(minimum requirement size is 10)
+* **worker_node.count:(Required)** - Count of the Worker Nodes
+* **worker_node.cpu_cores:(Required)** - CPU cores count of the Worker Node:(minimum requirement count is 1)
+* **worker_node.memory:(Required)** - RAM memory of the Worker Node:(minimum requirement size is 2048)
+* **worker_node.disc_size:(Required)** - Disk size of the Worker Node:(minimum requirement size is 10)
 
-Click on the `Run workflow` button to create the cluster. It is completed within 10 minutes 
-and another 10 minutes for configuring VMs.
+Now all you need to do is pushing the changes into GitHub. Then it automatically implements changes appropriate to the configuration file.
+It is completed within 5 minutes.
 
-After workflow is completed, click on the `artifact` to download `kubeconfig` configuration file.
+After workflow is completed, click on the `artifact` to download `kubeconfig` configuration file. You can go to a given GitHub url, add your Kubernetes manifests and enjoy the result.
 
 
 ### Destroying a Cluster
-For destroying a cluster you need to run the following workflow: **Actions>Destroy Kubernetes Cluster>Run workflow.** 
-You need to set the cluster name you want to delete.
+For destroying a cluster you need to remove the cluster configuration from `input.yaml` file and push it into GitHub.
+Then it will be eliminated during 1-2 minutes.
 
-* **ClusterName:(Required)** - the cluster name which must be deleted
-
-Click on the `Run workflow` button to destroy the cluster. It is completed within 10 minutes.
-
-It is possible to create a cluster with the same name, after workflow is completed. 
 
 ## Kubectl
 
 Now `unzip` the downloaded kubeconfig and export it as a `KUBECONFIG` variable.
 <br>
-Try `kubectl get node` to check Kubernetes is running or not.
+Try `kubectl get node` to check Kubernetes is running.
 
 #### Congratulations!!! Kubernetes cluster ready to deploy and manage your containerized applications.
