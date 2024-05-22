@@ -36,7 +36,9 @@ jobs:
       uses: mikefarah/yq@master
       id: workspaces
       with:
-        cmd: echo "WORKSPACES=$(yq e '.[].cluster_name' inputs.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        cmd: |
+          echo "workspaces=$(yq e '.[].cluster_name' inputs.yaml | jq -R -s -c 'split("\n")[:-1]')"
+          echo "::set-output name=workspaces::$workspaces"
 
     - uses: hashicorp/setup-terraform@v3
       with:
