@@ -57,6 +57,46 @@ jobs:
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
+  destroy_resources:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform"
+    strategy:
+      matrix:
+        destroyable_resources: ${{ fromJSON(needs.setup_terraform.outputs.removable_workspaces) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_version: 1.7.5
+
+      - name: Configure Terraform Cache
+        run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+
+      - name: Initializing Terraform
+        run: terraform init
+        env:
+          TF_WORKSPACE: "default-ws"
+
+      - name: Selecting Terraform Workspace
+        run: terraform workspace select ${{ matrix.destroyable_resources }}
+
+      - name: Destroying Terraform
+        run: |
+          terraform destroy -auto-approve
+
+      - name: Destroying Terraform Cloud Workspace
+        run: |
+          terraform workspace select default-ws
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}
+
   run_terraform:
     needs: setup_terraform
     runs-on: self-hosted
