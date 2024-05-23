@@ -42,7 +42,6 @@ jobs:
     - name: Configure Terraform Cache
       run: |
         echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
-        echo ${{needs.setup_terraform.outputs.removable_workspaces}}
 
     - name: Initializing Terraform
       id: init
@@ -56,6 +55,11 @@ jobs:
         echo "clusters=$(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
         echo "workspaces=$(terraform workspace list | grep -v 'default-ws' | jq -R -s -c 'split("\n")[:-2] | map(ltrimstr("  "))')" >> $GITHUB_OUTPUT
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
+
+    - name: Echo
+      run: |
+        echo ${{steps.output_variables.outputs.removable_workspaces}}
+        echo $workspaces
 
   run_terraform:
     needs: setup_terraform
