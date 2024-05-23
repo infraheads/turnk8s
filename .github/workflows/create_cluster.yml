@@ -35,6 +35,8 @@ jobs:
     - name: Extract values and set environment variables
       id: ws
       run: |
+        echo $(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')
+        echo $(yq e '.[].cluster_name' inputs.yaml | jq -R -s -c 'split("\n")[:-1]')
         echo "::set-output name=worksp::$(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')"
         
 
