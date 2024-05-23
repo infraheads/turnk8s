@@ -58,6 +58,7 @@ jobs:
 
     - name: Echo
       run: |
+        echo ${{steps.output_variables.outputs.clusters}}
         echo ${{steps.output_variables.outputs.removable_workspaces}}
         echo $workspaces
 
