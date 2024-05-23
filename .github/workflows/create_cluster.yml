@@ -33,17 +33,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: hashicorp/setup-terraform@v3
+    - name: Setup Terraform Environment
+      uses: hashicorp/setup-terraform@v3
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         terraform_version: 1.7.5
-
-    - name: Extract values and set output variables
-      id: output_variables
-      run: |
-        echo "clusters=$(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
-        echo "workspaces=$(terraform workspace list | grep -v 'default-ws' | jq -R -s -c 'split("\n")[:-2] | map(ltrimstr("  "))')" >> $GITHUB_OUTPUT
-        echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
 
     - name: Configure Terraform Cache
       run: |
@@ -55,6 +49,13 @@ jobs:
       run: terraform init -upgrade
       env:
         TF_WORKSPACE: "default-ws"
+
+    - name: Extract values and set output variables
+      id: output_variables
+      run: |
+        echo "clusters=$(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        echo "workspaces=$(terraform workspace list | grep -v 'default-ws' | jq -R -s -c 'split("\n")[:-2] | map(ltrimstr("  "))')" >> $GITHUB_OUTPUT
+        echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
 
   run_terraform:
     needs: setup_terraform
