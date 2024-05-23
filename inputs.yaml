@@ -11,7 +11,7 @@
     cpu_cores: 2
     memory: 2048
     disc_size: 10
-- cluster_name: new3
+- cluster_name: new2
   versions:
     talos: v1.7.1
     k8s: v1.30.0
