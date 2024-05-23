@@ -58,6 +58,7 @@ jobs:
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
   destroy_resources:
+    needs: setup_terraform
     runs-on: self-hosted
     permissions:
       contents: read
