@@ -28,24 +28,27 @@ jobs:
       run:
         working-directory: "terraform"
     outputs:
-      workspaces: ${{steps.ws.outputs.worksp}}
+      clusters: ${{steps.output_variables.outputs.clusters}}
+      removable_workspaces: ${{steps.output_variables.outputs.removable_workspaces}}
     steps:
     - uses: actions/checkout@v4
-    - name: Extract values and set environment variables
-      id: ws
-      run: |
-        echo $(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')
-        echo "worksp=$(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT        
 
     - uses: hashicorp/setup-terraform@v3
       with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         terraform_version: 1.7.5
 
+    - name: Extract values and set output variables
+      id: output_variables
+      run: |
+        echo "clusters=$(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        echo "workspaces=$(terraform workspace list | grep -v 'default-ws' | jq -R -s -c 'split("\n")[:-2] | map(ltrimstr("  "))')" >> $GITHUB_OUTPUT
+        echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
+
     - name: Configure Terraform Cache
       run: |
         echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
-        echo ${{steps.ws.outputs.worksp}}
+        echo ${{needs.setup_terraform.outputs.removable_workspaces}}
 
     - name: Initializing Terraform
       id: init
@@ -64,7 +67,7 @@ jobs:
         working-directory: "terraform"
     strategy:
       matrix:
-        workspaces: ${{ fromJSON(needs.setup_terraform.outputs.workspaces) }}
+        workspaces: ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
     steps:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
