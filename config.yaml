@@ -1,9 +1,9 @@
-infraheads-interanl:
+interanl:
   controlplane:
     cpu_cores: 2
     memory: 4096
     disk_size: 10
   worker_node:
     cpu_cores: 4
-    memory: 8192
+    memory: 4096
     disc_size: 200
