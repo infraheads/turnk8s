@@ -103,6 +103,7 @@ jobs:
 
   run_terraform:
     needs: setup_terraform
+    if: fromJSON(needs.setup_terraform.outputs.clusters) != '[]'
     runs-on: self-hosted
     permissions:
       contents: read
