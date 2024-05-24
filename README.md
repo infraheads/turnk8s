@@ -30,7 +30,8 @@ turnk8s-cluster:
 
 
 ### Creating a Cluster
-You can create one or many clusters at once. All you need to do is add the turnk8s cluster configurations to the config.yaml file.
+You can create one or many clusters at once. All you need to do is add the turnk8s cluster configurations to the config.yaml file and push it to your turnk8s.
+Please note that you need Proxmox hosts deployed and available for your GitHub runner and Netris controller and softgate nodes available for your Kubernetes cluster pods.
 
 Configuration parameters:
 * **the main key is the cluster name:(Required)** - A unique cluster name
@@ -43,12 +44,14 @@ Configuration parameters:
 * **worker_node.memory:(Required)** - worker node RAM:(min 2048)
 * **worker_node.disc_size:(Required)** - worker node disk size:(min 10)
 
-Pushing config.yaml triggers a GitHub actions workflow. When the workflow is complete, the Kubernetes configuration files and the Kubernetes services repo URL are shown on the summary page.
-Push manifests to the Kubernetes services repo to get them deployed on the Kubernetes cluster.
+Pushing config.yaml triggers a GitHub actions workflow. The Kubernetes configuration files and the Kubernetes services repo URL are shown on the summary page when the workflow is complete.
+
+<img width="1883" alt="Screenshot 2024-05-24 at 17 11 48" src="https://github.com/infraheads/turnk8s/assets/10867292/38771d9f-c3bc-4427-b6e4-5b747f06dab1">
+
 
 
 ### Destroying a Cluster
-For destroying a cluster, you need to remove the cluster configuration from the `config.yaml` file and push it to your turnk8s repository.
+To destroy a cluster, you must remove the cluster configuration from the `config.yaml` file and push it to your turnk8s repository.
 
 ## Kubectl
 
