@@ -59,7 +59,7 @@ jobs:
 
   destroy_resources:
     needs: setup_terraform
-    if: fromJSON(needs.setup_terraform.outputs.removable_workspaces) != '[]'
+    if: ${{ needs.setup_terraform.outputs.removable_workspaces != '[]' }}
     runs-on: self-hosted
     permissions:
       contents: read
@@ -103,7 +103,7 @@ jobs:
 
   run_terraform:
     needs: setup_terraform
-    if: fromJSON(needs.setup_terraform.outputs.clusters) != '[]'
+    if: ${{ needs.setup_terraform.outputs.clusters != '[]' }}
     runs-on: self-hosted
     permissions:
       contents: read
