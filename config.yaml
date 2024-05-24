@@ -4,6 +4,6 @@ infraheads-interanl:
     memory: 4096
     disk_size: 10
   worker_node:
-    cpu_cores: 4
-    memory: 8192
+    cpu_cores: 8
+    memory: 16384
     disc_size: 200
