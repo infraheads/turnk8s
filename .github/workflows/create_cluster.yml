@@ -141,3 +141,10 @@ jobs:
         name: kube-config-${{ matrix.cluster }}
         path: /opt/kubeconfig/${{ matrix.cluster }}
         compression-level: 0
+
+    - name: Generate Markdown
+      run: |
+        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Here is the [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) for this cluster. You can add your ArgoCD application or Kubernetes manifests and enjoy! :star_struck:" >> $GITHUB_STEP_SUMMARY
+        echo "Find `kubeconfig` file(s) to connect to the cluster(s), which is/are attached bellow! :point_down:" >> $GITHUB_STEP_SUMMARY
