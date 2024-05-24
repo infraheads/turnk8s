@@ -13,7 +13,7 @@ resource "github_repository" "argocd_applications" {
 }
 
 resource "github_repository_file" "argocd_application" {
-  for_each = local.clusters
+  for_each   = local.clusters
 
   repository = github_repository.argocd_applications[each.key].name
   branch     = "main"

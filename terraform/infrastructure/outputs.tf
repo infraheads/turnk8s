@@ -4,5 +4,5 @@ output "cluster_kubeconfig" {
 }
 
 output "github_repo_url" {
-  value = github_repository.argocd_applications[var.cluster_name].http_clone_url
+  value = github_repository.argocd_applications
 }
