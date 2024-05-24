@@ -8,7 +8,7 @@ turnk8s
 
 ## GitHub
 
-It is possible to manage cluster(s) via the `inputs.yaml` configuration file. You can create or destroy cluster(s) 
+It is possible to manage cluster(s) via the `config.yaml` configuration file. You can create or destroy cluster(s) 
 by changing the configuration file.
 <details>
   <summary>Click here to see the structure of configuration file:</summary>
@@ -32,7 +32,7 @@ turnk8s-cluster:
 
 
 ### Creating a Cluster
-For creating a cluster you need to configure `inputs.yaml` configuration file by adding the above structure into inputs.yaml file.  
+For creating a cluster you need to configure `config.yaml` configuration file by adding the above structure into config.yaml file.  
 
 Here is the descriptions of the configuration values:
 * **the main key is the cluster name:(Required)** - The cluster name which must be unique
@@ -53,7 +53,7 @@ After workflow is completed, click on the `artifact` to download `kubeconfig` co
 
 
 ### Destroying a Cluster
-For destroying a cluster you need to remove the cluster configuration from `input.yaml` file and push it into GitHub.
+For destroying a cluster you need to remove the cluster configuration from `config.yaml` file and push it into GitHub.
 Then it will be eliminated during 1-2 minutes.
 
 
