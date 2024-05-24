@@ -1,0 +1,150 @@
+name: 'Apply Terraform'
+
+on:
+  push:
+    branches:
+      - 'master'
+    paths:
+      - 'inputs.yaml'
+      
+env:
+  TF_CLOUD_ORGANIZATION: "infraheads"
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+  TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
+  TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+  TF_VAR_github_token: "${{ secrets.TOKEN_GITHUB }}"
+  TF_VAR_netris_controller_host: "${{ vars.NETRIS_CONTROLLER_HOST }}"
+  TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
+  TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
+  TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
+
+jobs:
+  setup_terraform:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform/infrastructure"
+    outputs:
+      clusters: ${{ steps.output_variables.outputs.clusters }}
+      removable_workspaces: ${{ steps.output_variables.outputs.removable_workspaces }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Terraform Environment
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_version: 1.7.5
+
+    - name: Configure Terraform Cache
+      run: |
+        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+
+    - name: Initializing Terraform
+      id: init
+      run: terraform init -upgrade
+      env:
+        TF_WORKSPACE: "default-ws"
+
+    - name: Extract values and set output variables
+      id: output_variables
+      run: |
+        clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/inputs.yaml | jq -R -s -c 'split("\n")[:-1]')
+        workspaces=$(terraform workspace list | grep -v 'default-ws' | sed 's/-infrastructure$//;s/-cluster$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
+        echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
+        echo "clusters=$clusters" >> $GITHUB_OUTPUT
+
+  destroy_cluster:
+    needs: setup_terraform
+    if: ${{ needs.setup_terraform.outputs.removable_workspaces != '[]' }}
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform/infrastructure"
+    strategy:
+      matrix:
+        destroyable_resources: ${{ fromJSON(needs.setup_terraform.outputs.removable_workspaces) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_version: 1.7.5
+
+      - name: Configure Terraform Cache
+        run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+
+      - name: Initializing Terraform
+        run: terraform init
+        env:
+          TF_WORKSPACE: "default-ws"
+          TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
+
+      - name: Selecting Terraform Workspace
+        run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure
+
+      - name: Destroying Terraform
+        run: |
+          terraform destroy -auto-approve
+
+      - name: Destroying Terraform Cloud Workspace
+        run: |
+          terraform workspace select default-ws
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-infrastructure
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-cluster
+
+  apply_cluster:
+    needs: setup_terraform
+    if: ${{ needs.setup_terraform.outputs.clusters != '[]' }}
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform"
+    strategy:
+      matrix:
+        cluster: ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
+    steps:
+    - name: Apply Terraform Infrastructure
+      uses: ./.github/actions/apply_terraform_composite_action
+      with:
+        workspace: ${{ matrix.cluster }}-infrastructure
+        plan_output: tfplan-${{ matrix.cluster }}-infrastructure
+        working_directory: "terraform/infrastructure"
+        tf_api_token: ${{ secrets.TF_API_TOKEN }}
+      env:
+        TF_VAR_cluster_name: ${{ matrix.cluster }}
+
+    - name: Apply Terraform Cluster
+      uses: ./.github/actions/apply_terraform_composite_action
+      with:
+        workspace: ${{ matrix.cluster }}-cluster
+        plan_output: tfplan-${{ matrix.cluster }}-cluster
+        working_directory: "terraform/cluster"
+        tf_api_token: ${{ secrets.TF_API_TOKEN }}
+      env:
+        TF_VAR_cluster_name: ${{ matrix.cluster }}
+
+    - name: Generating kube-config
+      uses: actions/upload-artifact@v4
+      with:
+        name: kube-config-${{ matrix.cluster }}
+        path: /opt/kubeconfig/${{ matrix.cluster }}
+        compression-level: 0
+
+    - name: Generate Markdown
+      run: |
+        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Here is the [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) for this cluster. You can add your ArgoCD application or Kubernetes manifests and enjoy! :star_struck:" >> $GITHUB_STEP_SUMMARY
+        echo "Find `kubeconfig` file(s) to connect to the cluster(s), which is/are attached above! :point_up:" >> $GITHUB_STEP_SUMMARY

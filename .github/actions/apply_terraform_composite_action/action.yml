@@ -1,0 +1,74 @@
+name: "Apply Terraform Composite Action"
+description: "A composite action to apply terraform"
+inputs:
+  workspace:
+    description: "Terraform Workspace"
+    required: true
+  plan_output:
+    description: "Terraform Plan Output FileName"
+    required: true
+  working_directory:
+    description: "Terraform Working Directory"
+    required: true
+  tf_api_token:
+    description: "Terraform API Token"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ inputs.tf_api_token }}
+        terraform_version: 1.7.5
+
+    - name: Configure Terraform Cache
+      run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Initializing Terraform
+      run: |
+        cd ${{ inputs.working_directory }}
+        terraform init
+      shell: bash
+      env:
+        TF_WORKSPACE: "default-ws"
+
+    - name: Selecting Terraform Workspace
+      id: workspace
+      run: |
+        cd ${{ inputs.working_directory }}
+        terraform workspace select -or-create ${{ inputs.workspace }}
+      shell: bash
+
+    - name: Validating Terraform
+      id: validate
+      run: |
+        cd ${{ inputs.working_directory }}
+        terraform validate -no-color
+      shell: bash
+
+    - name: Planning Terraform
+      id: plan
+      run: |
+        cd ${{ inputs.working_directory }}
+        terraform plan -out=${{ inputs.plan_output }}
+      shell: bash
+
+    - name: Applying Terraform
+      id: apply
+      run: |
+        cd ${{ inputs.working_directory }}
+        set +e
+        terraform apply ${{ inputs.plan_output }}
+        tf_exitcode=$?
+        set -e
+        if [ $tf_exitcode -ne 0 ];
+        then
+        echo """
+          Error: Unable to create a Cluster.
+          Message: This could be caused by a lack of resources in the server. Please review the server resources and try again.
+          """
+        exit 1
+        fi
+      shell: bash
