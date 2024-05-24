@@ -4,7 +4,6 @@ turnk8s
 ## Introduction
 
 **turnk8s** is a toolset for On-Prem, turnkey kubernetes deployments based on  [Talos Linux](https://www.talos.dev) and [Proxmox](https://www.proxmox.com). 
-For each cluster is created GitHub repository which contains Kubernetes manifests are managed by ArgoCD.  
 
 
 ## GitHub
