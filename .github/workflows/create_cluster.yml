@@ -3,9 +3,9 @@ name: 'Apply Terraform'
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     paths:
-      - 'inputs.yaml'
+      - 'config.yaml'
       
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
