@@ -57,11 +57,6 @@ jobs:
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
-    - name: Echo
-      run: |
-        echo ${{steps.output_variables.outputs.clusters}}
-        echo ${{steps.output_variables.outputs.removable_workspaces}}
-
   destroy_resources:
     needs: setup_terraform
     runs-on: self-hosted
@@ -124,7 +119,7 @@ jobs:
         workspace: ${{ matrix.cluster }}-infrastructure
         cluster: ${{ matrix.cluster }}
         plan_output: tfplan-${{ matrix.cluster }}-infrastructure
-        working_directory: "infrastructure"
+        working_directory: "terraform/infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
     - name: Apply Terraform Cluster
@@ -133,7 +128,7 @@ jobs:
         workspace: ${{ matrix.cluster }}-cluster
         cluster: ${{ matrix.cluster }}
         plan_output: tfplan-${{ matrix.cluster }}-cluster
-        working_directory: "cluster"
+        working_directory: "terraform/cluster"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
     - name: Generating kube-config
