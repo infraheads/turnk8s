@@ -6,7 +6,21 @@ turnk8s
 **turnk8s** is a toolset for On-Prem, turnkey Kubernetes deployments based on  [Talos Linux](https://www.talos.dev) and [Proxmox](https://www.proxmox.com). 
 
 
-## GitHub
+## Before using turnk8s
+
+You must fork turnk8s, set up a self-hosted GitHub runner inside your infrastructure, and create infrastructure-specific environmental variables. See the list of the repository's environmental variables.
+- ARGOCD_ADMIN_PASSWORD - Used as ArgoCD web interface password.
+- NETRIS_CONTROLLER_LOGIN - [Your Netris controller login](https://www.netris.io/docs/en/latest/tutorials/installing-netris-controller.html)
+- NETRIS_CONTROLLER_PASSWORD - [Your Netris controller password](https://www.netris.io/docs/en/latest/tutorials/installing-netris-controller.html)
+- PROXMOX_IP - Proxmox host IP address
+- PROXMOX_TOKEN_ID - [Proxmox api token id](https://www.netris.io/docs/en/latest/tutorials/installing-netris-controller.html)
+- PROXMOX_TOKEN_SECRET - [Proxmox api token secret](https://www.netris.io/docs/en/latest/tutorials/installing-netris-controller.html)
+- TF_API_TOKEN - [Terraform cloud API token](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions)
+- TOKEN_GITHUB - GitHub token
+
+Please note that the GitHub token should have repository creation privileges.
+
+## Using turnk8s
 
 Adhering to GitOps, you can manage all the clusters with the `config.yaml` configuration file. turnk8s ensures that the `config.yaml` represents the state of your running clusters.
 <details>
