@@ -4,9 +4,6 @@ inputs:
   workspace:
     description: "Terraform Workspace"
     required: true
-#  cluster:
-#    description: "Cluster Name"
-#    required: true
   plan_output:
     description: "Terraform Plan Output FileName"
     required: true
@@ -36,7 +33,6 @@ runs:
       shell: bash
       env:
         TF_WORKSPACE: "default-ws"
-#        TF_VAR_cluster_name: ${{ inputs.cluster }}
 
     - name: Selecting Terraform Workspace
       id: workspace
