@@ -4,11 +4,7 @@ interanl:
     memory: 4096
     disk_size: 10
   worker_node:
-<<<<<<< HEAD
     cpu_cores: 4
     memory: 4096
-=======
     cpu_cores: 8
-    memory: 8192
->>>>>>> 11899e62398098ffbd60ce19b4e91024d66ece39
     disc_size: 200
