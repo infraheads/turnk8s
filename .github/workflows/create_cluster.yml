@@ -57,14 +57,6 @@ jobs:
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
-    - name: Generate Markdown
-      if: ${{ steps.output_variables.outputs.clusters != '[]' }}
-      run: |
-        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Here is/are the GitHub URL(s) for each cluster: $(echo ${{ steps.output_variables.outputs.clusters }} | jq -r 'map("[\(.)](https://github.com/infraheads/\(.))") | join(", ")')" >> $GITHUB_STEP_SUMMARY
-        echo "Find \`kubeconfig\` file(s) to connect to the cluster(s), which is/are attached bellow! :point_down:" >> $GITHUB_STEP_SUMMARY
-
   destroy_cluster:
     needs: setup_terraform
     if: ${{ needs.setup_terraform.outputs.removable_workspaces != '[]' }}
@@ -149,3 +141,10 @@ jobs:
         name: kube-config-${{ matrix.cluster }}
         path: /opt/kubeconfig/${{ matrix.cluster }}
         compression-level: 0
+
+    - name: Generate Markdown
+      run: |
+        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Here is the [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) for this cluster. You can add your ArgoCD application or Kubernetes manifests and enjoy! :star_struck:" >> $GITHUB_STEP_SUMMARY
+        echo "Find `kubeconfig` file(s) to connect to the cluster(s), which is/are attached above! :point_up:" >> $GITHUB_STEP_SUMMARY
