@@ -1,0 +1,56 @@
+name: "Apply Terraform Composite Action"
+description: "A composite action to apply terraform"
+inputs:
+  workspace: "default-ws"
+  cluster: "cluster"
+  plan_output: "tfplan"
+  working_directory: "terraform"
+  tf_api_token: "tf_api_token"
+runs:
+  using: "composite"
+  defaults:
+    run:
+      working-directory: ${{ inputs.working_directory }}
+  steps:
+  - name: Setup Terraform
+    uses: hashicorp/setup-terraform@v3
+    with:
+      cli_config_credentials_token: ${{ inputs.tf_api_token }}
+      terraform_version: 1.7.5
+
+  - name: Configure Terraform Cache
+    run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+
+  - name: Initializing Terraform
+    run: terraform init
+    env:
+      TF_WORKSPACE: "default-ws"
+      TF_VAR_cluster_name: ${{ inputs.cluster }}
+
+  - name: Selecting Terraform Workspace
+    id: workspace
+    run: terraform workspace select -or-create ${{ inputs.workspace }}
+
+  - name: Validating Terraform
+    id: validate
+    run: terraform validate -no-color
+
+  - name: Planning Terraform
+    id: plan
+    run: terraform plan -out=${{ inputs.plan_output }}
+
+  - name: Applying Terraform
+    id: apply
+    run: |
+      set +e
+      terraform apply ${{ inputs.plan_output }}
+      tf_exitcode=$?
+      set -e
+      if [ $tf_exitcode -ne 0 ];
+      then
+      echo """
+        Error: Unable to create a Cluster.
+        Message: This could be caused by a lack of resources in the server. Please review the server resources and try again.
+        """
+      exit 1
+      fi

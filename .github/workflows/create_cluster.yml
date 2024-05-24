@@ -26,7 +26,7 @@ jobs:
       pull-requests: write
     defaults:
       run:
-        working-directory: "terraform"
+        working-directory: "terraform/infrastructure"
     outputs:
       clusters: ${{steps.output_variables.outputs.clusters}}
       removable_workspaces: ${{steps.output_variables.outputs.removable_workspaces}}
@@ -52,8 +52,8 @@ jobs:
     - name: Extract values and set output variables
       id: output_variables
       run: |
-        clusters=$(yq e '.[].cluster_name' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')
-        workspaces=$(terraform workspace list | grep -v 'default-ws' | jq -R -s -c 'split("\n")[:-2] | map(ltrimstr("  "))')
+        clusters=$(yq e 'keys | .[]' ../inputs.yaml | jq -R -s -c 'split("\n")[:-1]')
+        workspaces=$(terraform workspace list | grep -v 'default-ws' | sed 's/-infrastructure$//;s/-cluster$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
@@ -65,7 +65,7 @@ jobs:
       pull-requests: write
     defaults:
       run:
-        working-directory: "terraform"
+        working-directory: "terraform/infrastructure"
     strategy:
       matrix:
         destroyable_resources: ${{ fromJSON(needs.setup_terraform.outputs.removable_workspaces) }}
@@ -85,9 +85,10 @@ jobs:
         run: terraform init
         env:
           TF_WORKSPACE: "default-ws"
+          TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
 
       - name: Selecting Terraform Workspace
-        run: terraform workspace select ${{ matrix.destroyable_resources }}
+        run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure
 
       - name: Destroying Terraform
         run: |
@@ -96,7 +97,8 @@ jobs:
       - name: Destroying Terraform Cloud Workspace
         run: |
           terraform workspace select default-ws
-          terraform workspace delete -force ${{ matrix.destroyable_resources }}
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-infrastructure
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-cluster
 
   run_terraform:
     needs: setup_terraform
@@ -109,45 +111,29 @@ jobs:
         working-directory: "terraform"
     strategy:
       matrix:
-        workspaces: ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
+        cluster: ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
     steps:
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+    - name: Apply Terraform Infrastructure
+      uses: ./.github/actions/apply_terraform_composite_action
       with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-        terraform_version: 1.7.5
+        workspace: ${{ matrix.cluster }}-infrastructure
+        cluster: ${{ matrix.cluster }}
+        plan_output: tfplan-${{ matrix.cluster }}-infrastructure
+        working_directory: "terraform/infrastructure"
+        tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Selecting Terraform Workspace
-      id: workspace
-      run: terraform workspace select -or-create ${{ matrix.workspaces }}
+    - name: Apply Terraform Cluster
+      uses: ./.github/actions/apply_terraform_composite_action
+      with:
+        workspace: ${{ matrix.cluster }}-cluster
+        cluster: ${{ matrix.cluster }}
+        plan_output: tfplan-${{ matrix.cluster }}-cluster
+        working_directory: "terraform/cluster"
+        tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Validating Terraform
-      id: validate
-      run: terraform validate -no-color
-
-    - name: Planning Terraform
-      id: plan
-      run: terraform plan -out=tfplan
-
-    - name: Applying Terraform
-      id: apply
-      run: |
-        set +e
-        terraform apply tfplan
-        tf_exitcode=$?
-        set -e
-        if [ $tf_exitcode -ne 0 ];
-        then
-        echo """
-          Error: Unable to create a Cluster.
-          Message: This could be caused by a lack of resources in the server. Please review the server resources and try again.
-          """
-        exit 1
-        fi
-
-#    - name: Generating kube-config
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: kube-config
-#        path: /tmp/kube-config
-#        compression-level: 0
+    - name: Generating kube-config
+      uses: actions/upload-artifact@v4
+      with:
+        name: kube-config-${{ matrix.cluster }}
+        path: /opt/kubeconfig/${{ matrix.cluster }}
+        compression-level: 0
