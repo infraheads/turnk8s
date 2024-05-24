@@ -55,8 +55,6 @@ To destroy a cluster, you must remove the cluster configuration from the `config
 
 ## Kubectl
 
-Now `unzip` the downloaded kubeconfig and export it as a `KUBECONFIG` variable.
+Download the kubeconfig file from the summary page, unzip it, and export its path to the `KUBECONFIG` variable.
 <br>
-Try `kubectl get node` to check Kubernetes is running.
-
-#### Congratulations!!! Kubernetes cluster is ready to deploy and manage your containerized applications.
+Try `kubectl get nodes` to check if Kubernetes is running.
