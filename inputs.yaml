@@ -1,4 +1,4 @@
-test:
+test1:
   controlplane:
     cpu_cores: 2
     memory: 4096
@@ -8,7 +8,7 @@ test:
     cpu_cores: 2
     memory: 2048
     disc_size: 10
-test2:
+test3:
   controlplane:
     cpu_cores: 2
     memory: 4096
