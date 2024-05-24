@@ -62,7 +62,7 @@ jobs:
       run: |
         echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        Here is/are the GitHub URL(s) for each cluster: ${{ steps.output_variables.outputs.clusters }} | jq -r 'map("[\(.)](https://github.com/infraheads/\(.))") | join(", ")'        
+        Here is/are the GitHub URL(s) for each cluster: $( ${{ steps.output_variables.outputs.clusters }} | jq -r 'map("[\(.)](https://github.com/infraheads/\(.))") | join(", ")' )
         echo "Find \`kubeconfig\` file(s) to connect to the cluster(s), which is/are attached bellow! :point_down:" >> $GITHUB_STEP_SUMMARY
 
   destroy_cluster:
