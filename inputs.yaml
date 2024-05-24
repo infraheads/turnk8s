@@ -1,4 +1,4 @@
-test:
+test1:
   controlplane:
     cpu_cores: 2
     memory: 4096

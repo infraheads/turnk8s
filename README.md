@@ -15,7 +15,7 @@ by changing the configuration file.
   <summary>Click here to see the structure of configuration file:</summary>
 
 ```yaml
-- cluster_name: turnk8s-cluster
+turnk8s-cluster:
   versions:
     talos: v1.7.1
     k8s: v1.30.0
@@ -36,7 +36,7 @@ by changing the configuration file.
 For creating a cluster you need to configure `inputs.yaml` configuration file by adding the above structure into inputs.yaml file.  
 
 Here is the descriptions of the configuration values:
-* **cluster_name:(Required)** - The cluster name which must be unique
+* **the main key is the cluster name:(Required)** - The cluster name which must be unique
 * **versions.talos:(Required)** - Talos Linux version: the possible versions are v1.7.1, v1.7.1, v1.6.7
 * **versions.k8s:(Required)** - Kubernetes version: the possible versions are v1.30.0, v1.29.3, v1.6.7
 * **controlplane.cpu_cores:(Required)** - CPU cores count of the ControlPlane:(minimum requirement count is 2)

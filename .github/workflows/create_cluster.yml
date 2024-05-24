@@ -57,7 +57,7 @@ jobs:
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
-  destroy_resources:
+  destroy_cluster:
     needs: setup_terraform
     if: ${{ needs.setup_terraform.outputs.removable_workspaces != '[]' }}
     runs-on: self-hosted
@@ -101,7 +101,7 @@ jobs:
           terraform workspace delete -force ${{ matrix.destroyable_resources }}-infrastructure
           terraform workspace delete -force ${{ matrix.destroyable_resources }}-cluster
 
-  run_terraform:
+  apply_cluster:
     needs: setup_terraform
     if: ${{ needs.setup_terraform.outputs.clusters != '[]' }}
     runs-on: self-hosted
