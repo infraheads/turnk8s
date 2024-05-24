@@ -8,9 +8,6 @@ inputs:
   tf_api_token: "tf_api_token"
 runs:
   using: "composite"
-  defaults:
-    run:
-      working-directory: ${{ inputs.working_directory }}
   steps:
   - name: Setup Terraform
     uses: hashicorp/setup-terraform@v3
@@ -22,26 +19,35 @@ runs:
     run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
 
   - name: Initializing Terraform
-    run: terraform init
+    run: |
+      cd ${{ inputs.working_directory }}
+      terraform init
     env:
       TF_WORKSPACE: "default-ws"
       TF_VAR_cluster_name: ${{ inputs.cluster }}
 
   - name: Selecting Terraform Workspace
     id: workspace
-    run: terraform workspace select -or-create ${{ inputs.workspace }}
+    run: |
+      cd ${{ inputs.working_directory }}
+      terraform workspace select -or-create ${{ inputs.workspace }}
 
   - name: Validating Terraform
     id: validate
-    run: terraform validate -no-color
+    run: |
+      cd ${{ inputs.working_directory }}
+      terraform validate -no-color
 
   - name: Planning Terraform
     id: plan
-    run: terraform plan -out=${{ inputs.plan_output }}
+    run:
+      cd ${{ inputs.working_directory }}
+      terraform plan -out=${{ inputs.plan_output }}
 
   - name: Applying Terraform
     id: apply
     run: |
+      cd ${{ inputs.working_directory }}
       set +e
       terraform apply ${{ inputs.plan_output }}
       tf_exitcode=$?

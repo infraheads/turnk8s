@@ -119,7 +119,7 @@ jobs:
         workspace: ${{ matrix.cluster }}-infrastructure
         cluster: ${{ matrix.cluster }}
         plan_output: tfplan-${{ matrix.cluster }}-infrastructure
-        working_directory: "terraform/infrastructure"
+        working_directory: "infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
     - name: Apply Terraform Cluster
@@ -128,7 +128,7 @@ jobs:
         workspace: ${{ matrix.cluster }}-cluster
         cluster: ${{ matrix.cluster }}
         plan_output: tfplan-${{ matrix.cluster }}-cluster
-        working_directory: "terraform/cluster"
+        working_directory: "cluster"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
     - name: Generating kube-config
