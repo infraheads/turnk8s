@@ -59,6 +59,7 @@ jobs:
 
   destroy_resources:
     needs: setup_terraform
+    if: ${{ fromJSON(needs.setup_terraform.outputs.removable_workspaces) != '[]' }}
     runs-on: self-hosted
     permissions:
       contents: read
@@ -117,19 +118,23 @@ jobs:
       uses: ./.github/actions/apply_terraform_composite_action
       with:
         workspace: ${{ matrix.cluster }}-infrastructure
-        cluster: ${{ matrix.cluster }}
+#        cluster: ${{ matrix.cluster }}
         plan_output: tfplan-${{ matrix.cluster }}-infrastructure
         working_directory: "terraform/infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
+      env:
+        TF_VAR_cluster_name: ${{ matrix.cluster }}
 
     - name: Apply Terraform Cluster
       uses: ./.github/actions/apply_terraform_composite_action
       with:
         workspace: ${{ matrix.cluster }}-cluster
-        cluster: ${{ matrix.cluster }}
+#        cluster: ${{ matrix.cluster }}
         plan_output: tfplan-${{ matrix.cluster }}-cluster
         working_directory: "terraform/cluster"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
+      env:
+        TF_VAR_cluster_name: ${{ matrix.cluster }}
 
     - name: Generating kube-config
       uses: actions/upload-artifact@v4

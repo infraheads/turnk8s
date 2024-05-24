@@ -4,5 +4,4 @@ locals {
 
   clusters = try({ tostring(var.cluster_name) = yamldecode(file("../../inputs.yaml"))[var.cluster_name] }, {})
   talos_iso  = "local:iso/metal-amd64-qemu-${var.talos_version}.iso"
-#   talos_iso  = "local:iso/metal-amd64-omni-infrahead-v1.7.0.iso"
 }
