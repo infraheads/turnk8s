@@ -27,11 +27,13 @@ runs:
 
     - name: Configure Terraform Cache
       run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+      shell: bash
 
     - name: Initializing Terraform
       run: |
         cd ${{ inputs.working_directory }}
         terraform init
+      shell: bash
       env:
         TF_WORKSPACE: "default-ws"
         TF_VAR_cluster_name: ${{ inputs.cluster }}
@@ -41,18 +43,21 @@ runs:
       run: |
         cd ${{ inputs.working_directory }}
         terraform workspace select -or-create ${{ inputs.workspace }}
+      shell: bash
 
     - name: Validating Terraform
       id: validate
       run: |
         cd ${{ inputs.working_directory }}
         terraform validate -no-color
+      shell: bash
 
     - name: Planning Terraform
       id: plan
       run: |
         cd ${{ inputs.working_directory }}
         terraform plan -out=${{ inputs.plan_output }}
+      shell: bash
 
     - name: Applying Terraform
       id: apply
@@ -70,3 +75,4 @@ runs:
           """
         exit 1
         fi
+      shell: bash
