@@ -1,11 +1,21 @@
 name: "Apply Terraform Composite Action"
 description: "A composite action to apply terraform"
 inputs:
-  workspace: "default-ws"
-  cluster: "cluster"
-  plan_output: "tfplan"
-  working_directory: "terraform"
-  tf_api_token: "tf_api_token"
+  workspace:
+    description: "Terraform Workspace"
+    required: true
+  cluster:
+    description: "Cluster Name"
+    required: true
+  plan_output:
+    description: "Terraform Plan Output FileName"
+    required: true
+  working_directory:
+    description: "Terraform Working Directory"
+    required: true
+  tf_api_token:
+    description: "Terraform API Token"
+    required: true
 runs:
   using: "composite"
   steps:
