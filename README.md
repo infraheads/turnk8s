@@ -1,6 +1,3 @@
-turnk8s
-=================
-
 ## Introduction
 
 **turnk8s** is a toolset for On-Prem, turnkey Kubernetes deployments based on  [Talos Linux](https://www.talos.dev) and [Proxmox](https://www.proxmox.com). 
