@@ -57,6 +57,11 @@ jobs:
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
+    - name: Echo
+      run: |
+        echo ${{steps.output_variables.outputs.clusters}}
+        echo ${{steps.output_variables.outputs.removable_workspaces}}
+
   destroy_resources:
     needs: setup_terraform
     runs-on: self-hosted
