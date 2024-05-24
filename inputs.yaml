@@ -8,3 +8,4 @@ test2:
     cpu_cores: 2
     memory: 2048
     disc_size: 10
+    
