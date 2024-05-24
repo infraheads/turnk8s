@@ -115,7 +115,7 @@ jobs:
       matrix:
         cluster: ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
     steps:
-    - name: Apply Terraform Infrastructure
+    - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
         workspace: ${{ matrix.cluster }}-infrastructure
@@ -125,7 +125,7 @@ jobs:
       env:
         TF_VAR_cluster_name: ${{ matrix.cluster }}
 
-    - name: Apply Terraform Cluster
+    - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
         workspace: ${{ matrix.cluster }}-cluster
@@ -142,9 +142,9 @@ jobs:
         path: /opt/kubeconfig/${{ matrix.cluster }}
         compression-level: 0
 
-    - name: Generate Markdown
+    - name: Generateing Markdown
       run: |
         echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Here is the [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) for this cluster. You can add your ArgoCD application or Kubernetes manifests and enjoy! :star_struck:" >> $GITHUB_STEP_SUMMARY
-        echo "Find `kubeconfig` file(s) to connect to the cluster(s), which is/are attached above! :point_up:" >> $GITHUB_STEP_SUMMARY
+        echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
+        echo "Use `kubeconfig` file(s) to connect to the cluster, see the link above :point_up:" >> $GITHUB_STEP_SUMMARY
