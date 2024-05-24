@@ -1,14 +1,4 @@
-test1:
-  controlplane:
-    cpu_cores: 2
-    memory: 4096
-    disk_size: 10
-  worker_node:
-    count: 1
-    cpu_cores: 2
-    memory: 2048
-    disc_size: 10
-test3:
+test:
   controlplane:
     cpu_cores: 2
     memory: 4096

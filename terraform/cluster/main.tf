@@ -1,8 +1,3 @@
-provider "github" {
-  token = var.github_token
-  owner = "infraheads"
-}
-
 provider "helm" {
   kubernetes {
     host                   = data.terraform_remote_state.infrastructure.outputs.cluster_kubeconfig[var.cluster_name].kubernetes_client_configuration.host

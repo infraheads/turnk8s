@@ -4,3 +4,8 @@ provider "proxmox" {
   pm_api_token_secret = var.proxmox_token_secret
   pm_tls_insecure     = true
 }
+
+provider "github" {
+  token = var.github_token
+  owner = "infraheads"
+}

@@ -34,6 +34,11 @@ variable "image_registry" {
   default     = "192.168.2.4:6000"
 }
 
+variable "github_token" {
+  description = "Git repository token"
+  type        = string
+}
+
 variable "cluster_name" {
   description = "The name of the cluster."
   type        = string
