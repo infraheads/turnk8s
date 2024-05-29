@@ -1,10 +1,9 @@
-interanl:
+internal:
   controlplane:
     cpu_cores: 2
     memory: 4096
     disk_size: 10
   worker_node:
-    cpu_cores: 4
     memory: 4096
-    cpu_cores: 8
-    disc_size: 200
+    cpu_cores: 2
+    disc_size: 10

@@ -3,7 +3,7 @@ name: 'Apply Terraform'
 on:
   push:
     branches:
-      - 'main'
+      - 'demo'
     paths:
       - 'config.yaml'
       
