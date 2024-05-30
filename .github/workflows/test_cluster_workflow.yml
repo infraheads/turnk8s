@@ -1,11 +1,11 @@
-name: 'Apply Terraform'
+name: 'Run Clusters'
 
 on:
   push:
-    branches:
+    branches-ignore:
       - 'main'
     paths:
-      - 'config.yaml'
+      - '${{ GITHUB_WORKSPACE }}/.github/configs/test_config.yaml'
       
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
@@ -53,7 +53,7 @@ jobs:
       id: output_variables
       run: |
         clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-        workspaces=$(terraform workspace list | grep -v 'default-ws' | sed 's/-infrastructure$//;s/-cluster$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
+        workspaces=$(terraform workspace list | grep '\(-infrastructure-test\|-cluster-test\)$' | sed 's/-infrastructure-test$//;s/-cluster-test$//' | uniq -d | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
@@ -89,7 +89,7 @@ jobs:
           TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
 
       - name: Selecting Terraform Workspace
-        run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure
+        run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure-test
 
       - name: Destroying Terraform
         run: |
@@ -98,9 +98,9 @@ jobs:
       - name: Destroying Terraform Cloud Workspace
         run: |
           terraform workspace select default-ws
-          terraform workspace delete -force ${{ matrix.destroyable_resources }}-infrastructure
-          terraform workspace delete -force ${{ matrix.destroyable_resources }}-cluster
-
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-infrastructure-test
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-cluster-test
+      
       - name: Remove kubeconfig
         run: rm /opt/kubeconfig/${{ matrix.destroyable_resources }}
 
@@ -121,8 +121,8 @@ jobs:
     - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ matrix.cluster }}-infrastructure
-        plan_output: tfplan-${{ matrix.cluster }}-infrastructure
+        workspace: ${{ matrix.cluster }}-infrastructure-test
+        plan_output: tfplan-${{ matrix.cluster }}-infrastructure-test
         working_directory: "terraform/infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
@@ -131,8 +131,8 @@ jobs:
     - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ matrix.cluster }}-cluster
-        plan_output: tfplan-${{ matrix.cluster }}-cluster
+        workspace: ${{ matrix.cluster }}-cluster-test
+        plan_output: tfplan-${{ matrix.cluster }}-cluster-test
         working_directory: "terraform/cluster"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
