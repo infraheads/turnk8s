@@ -17,7 +17,7 @@ env:
   TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
   TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
   TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
-  TF_VAR_config_file_path: "../../.github/configs/test_config.yaml"
+  TF_VAR_config_file_path: '../../.github/configs/test_config.yaml'
   POSTFIX: "pr"
   INFRASTRUCTURE_WORKSPACE_POSTFIX: "infrastructure-pr"
   CLUSTER_WORKSPACE_POSTFIX: "cluster-pr"
