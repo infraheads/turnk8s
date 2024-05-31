@@ -53,7 +53,7 @@ jobs:
       id: output_variables
       run: |
         clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-        workspaces=$(terraform workspace list | grep '\(-infrastructure\|-cluster\)$' | sed 's/-infrastructure$//;s/-cluster$//' | uniq -d | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
+        workspaces=$(terraform workspace list | grep '\(-infrastructure\|-cluster\)$' | sed 's/-infrastructure$//;s/-cluster$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
