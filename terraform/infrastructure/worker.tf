@@ -1,7 +1,7 @@
 resource "proxmox_vm_qemu" "worker" {
   for_each = local.clusters
 
-  name        = "${var.cluster_name}-worker-index"
+  name        = "${var.secondary_cluster_name}-worker-index"
   target_node = local.proxmox_target_node
   iso         = local.talos_iso
 

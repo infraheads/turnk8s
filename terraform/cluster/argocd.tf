@@ -2,7 +2,7 @@ module "argocd" {
 
   source     = "../../modules/argocd"
 
-  git_repository_ssh_url = data.terraform_remote_state.infrastructure.outputs.github_repo_url[var.cluster_name].http_clone_url
+  git_repository_ssh_url = data.terraform_remote_state.infrastructure.outputs.github_repo_url.http_clone_url
   registry               = var.image_registry
 
   argocd_chart_name         = var.argocd_chart_name

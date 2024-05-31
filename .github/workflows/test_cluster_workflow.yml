@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - 'main'
     paths:
-      - '${{ GITHUB_WORKSPACE }}/.github/configs/test_config.yaml'
+      - '.github/configs/test_config.yaml'
       
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
@@ -17,6 +17,10 @@ env:
   TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
   TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
   TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
+  TF_VAR_config_file_path: "../../.github/configs/test_config.yaml"
+  POSTFIX: "pr"
+  INFRASTRUCTURE_WORKSPACE_POSTFIX: "infrastructure-pr"
+  CLUSTER_WORKSPACE_POSTFIX: "cluster-pr"
 
 jobs:
   setup_terraform:
@@ -53,7 +57,7 @@ jobs:
       id: output_variables
       run: |
         clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-        workspaces=$(terraform workspace list | grep '\(-infrastructure-test\|-cluster-test\)$' | sed 's/-infrastructure-test$//;s/-cluster-test$//' | uniq -d | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
+        workspaces=$(terraform workspace list | grep '\(-${env.INFRASTRUCTURE_WORKSPACE_POSTFIX}\|-${env.CLUSTER_WORKSPACE_POSTFIX}\)$' | sed 's/-${env.INFRASTRUCTURE_WORKSPACE_POSTFIX}$//;s/-${env.CLUSTER_WORKSPACE_POSTFIX}$//' | uniq -d | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
@@ -87,9 +91,10 @@ jobs:
         env:
           TF_WORKSPACE: "default-ws"
           TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
+          TF_VAR_secondary_cluster_name: "${{ matrix.destroyable_resources }}-${{ env.POSTFIX }}"
 
       - name: Selecting Terraform Workspace
-        run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure-test
+        run: terraform workspace select ${{ matrix.destroyable_resources }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}
 
       - name: Destroying Terraform
         run: |
@@ -98,11 +103,11 @@ jobs:
       - name: Destroying Terraform Cloud Workspace
         run: |
           terraform workspace select default-ws
-          terraform workspace delete -force ${{ matrix.destroyable_resources }}-infrastructure-test
-          terraform workspace delete -force ${{ matrix.destroyable_resources }}-cluster-test
-      
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-${{ env.CLUSTER_WORKSPACE_POSTFIX }}
+
       - name: Remove kubeconfig
-        run: rm /opt/kubeconfig/${{ matrix.destroyable_resources }}
+        run: rm /opt/kubeconfig/${{ matrix.destroyable_resources }}-${{ env.POSTFIX }}
 
   apply_cluster:
     needs: setup_terraform
@@ -121,33 +126,35 @@ jobs:
     - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ matrix.cluster }}-infrastructure-test
-        plan_output: tfplan-${{ matrix.cluster }}-infrastructure-test
+        workspace: "${{ matrix.cluster }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}"
+        plan_output: tfplan-${{ matrix.cluster }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}
         working_directory: "terraform/infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
         TF_VAR_cluster_name: ${{ matrix.cluster }}
+        TF_VAR_secondary_cluster_name: "${{ matrix.cluster }}-${{ env.POSTFIX }}"
 
     - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ matrix.cluster }}-cluster-test
-        plan_output: tfplan-${{ matrix.cluster }}-cluster-test
+        workspace: "${{ matrix.cluster }}-${{ env.CLUSTER_WORKSPACE_POSTFIX }}"
+        plan_output: tfplan-${{ matrix.cluster }}-${{ env.CLUSTER_WORKSPACE_POSTFIX }}
         working_directory: "terraform/cluster"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
         TF_VAR_cluster_name: ${{ matrix.cluster }}
+        TF_VAR_infrastructure_workspace: "${{ matrix.cluster }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}"
 
     - name: Generating kube-config
       uses: actions/upload-artifact@v4
       with:
-        name: kube-config-${{ matrix.cluster }}
-        path: /opt/kubeconfig/${{ matrix.cluster }}
+        name: kube-config-${{ matrix.cluster }}-${{ env.POSTFIX }}
+        path: /opt/kubeconfig/${{ matrix.cluster }}-${{ env.POSTFIX }}
         compression-level: 0
 
     - name: Generateing Markdown
       run: |
         echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
+        echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}-${{ env.POSTFIX }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
         echo "Use `kubeconfig` file(s) to connect to the cluster, see the link above :point_up:" >> $GITHUB_STEP_SUMMARY

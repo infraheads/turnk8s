@@ -1,4 +1,4 @@
-interanl:
+internal:
   controlplane:
     cpu_cores: 2
     memory: 4096
@@ -6,5 +6,4 @@ interanl:
   worker_node:
     cpu_cores: 4
     memory: 4096
-    cpu_cores: 8
     disc_size: 200
