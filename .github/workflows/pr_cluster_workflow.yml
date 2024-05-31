@@ -60,12 +60,6 @@ jobs:
         workspaces=$(terraform workspace list | grep '\(-${{env.INFRASTRUCTURE_WORKSPACE_POSTFIX}}\|-${{env.CLUSTER_WORKSPACE_POSTFIX}}\)$' | sed 's/-${{env.INFRASTRUCTURE_WORKSPACE_POSTFIX}}$//;s/-${{env.CLUSTER_WORKSPACE_POSTFIX}}$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
-        echo $workspaces
-
-    - name: Echo Outputs
-      run: |
-        echo ${{ steps.output_variables.outputs.clusters }}
-        echo ${{ steps.output_variables.outputs.removable_workspaces }}
 
   destroy_cluster:
     needs: setup_terraform
