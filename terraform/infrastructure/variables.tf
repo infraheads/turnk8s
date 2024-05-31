@@ -54,7 +54,7 @@ variable "secondary_cluster_name" {
 variable "config_file_path" {
   description = "The config.yaml file, where clusters are described."
   type = string
-#   default = "../../config.yaml"
+  default = "../../config.yaml"
 }
 
 variable "controlplane_cores" {

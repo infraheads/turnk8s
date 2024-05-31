@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - 'main'
     paths:
-      - '.github/configs/test_config.yaml'
+      - 'pr_config.yaml'
       
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
@@ -17,7 +17,7 @@ env:
   TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
   TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
   TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
-  TF_VAR_config_file_path: '../../.github/configs/test_config.yaml'
+  TF_VAR_config_file_path: '../../pr_config.yaml'
   POSTFIX: "pr"
   INFRASTRUCTURE_WORKSPACE_POSTFIX: "infrastructure-pr"
   CLUSTER_WORKSPACE_POSTFIX: "cluster-pr"
@@ -56,7 +56,7 @@ jobs:
     - name: Extract values and set output variables
       id: output_variables
       run: |
-        clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
+        clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/pr_config.yaml | jq -R -s -c 'split("\n")[:-1]')
         workspaces=$(terraform workspace list | grep '\(-${env.INFRASTRUCTURE_WORKSPACE_POSTFIX}\|-${env.CLUSTER_WORKSPACE_POSTFIX}\)$' | sed 's/-${env.INFRASTRUCTURE_WORKSPACE_POSTFIX}$//;s/-${env.CLUSTER_WORKSPACE_POSTFIX}$//' | uniq -d | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
