@@ -1,4 +1,4 @@
-testcluster:
+internalcluster:
   controlplane:
     cpu_cores: 2
     memory: 4096
