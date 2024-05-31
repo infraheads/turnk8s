@@ -7,7 +7,7 @@ resource "talos_machine_secrets" "talos_secrets" {
 data "talos_client_configuration" "cp_cc" {
   for_each = local.clusters
 
-  cluster_name         = var.cluster_name
+  cluster_name         = var.secondary_cluster_name
   client_configuration = talos_machine_secrets.talos_secrets.client_configuration
   nodes                = [proxmox_vm_qemu.controlplane[each.key].default_ipv4_address]
   endpoints            = [proxmox_vm_qemu.controlplane[each.key].default_ipv4_address]

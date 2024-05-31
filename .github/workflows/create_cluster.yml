@@ -53,7 +53,7 @@ jobs:
       id: output_variables
       run: |
         clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-        workspaces=$(terraform workspace list | grep -v 'default-ws' | sed 's/-infrastructure$//;s/-cluster$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
+        workspaces=$(terraform workspace list | grep '\(-infrastructure\|-cluster\)$' | sed 's/-infrastructure$//;s/-cluster$//' | uniq -d | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
         echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
@@ -87,6 +87,7 @@ jobs:
         env:
           TF_WORKSPACE: "default-ws"
           TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
+          TF_VAR_secondary_cluster_name: ${{ matrix.destroyable_resources }}
 
       - name: Selecting Terraform Workspace
         run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure
@@ -127,6 +128,7 @@ jobs:
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
         TF_VAR_cluster_name: ${{ matrix.cluster }}
+        TF_VAR_secondary_cluster_name: ${{ matrix.cluster }}
 
     - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
@@ -137,6 +139,7 @@ jobs:
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
         TF_VAR_cluster_name: ${{ matrix.cluster }}
+        TF_VAR_infrastructure_workspace: ${{ matrix.cluster }}-infrastructure
 
     - name: Generating kube-config
       uses: actions/upload-artifact@v4
