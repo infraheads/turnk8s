@@ -5,17 +5,14 @@ locals {
   clusters  = try({ tostring(var.cluster_name) = yamldecode(file("../../config.yaml"))[var.cluster_name] }, {})
   talos_iso = "local:iso/metal-amd64-qemu-${var.talos_version}.iso"
 
-  workers_count = try([
-    for cluster_key, cluster in local.clusters :
-      cluster.worker_node.count
-  ][0], 0)
-
-  worker = try([
-    for cluster_key, cluster in local.clusters :
+  worker = flatten([
+    for cluster_key, cluster in local.clusters : [
+      for i in range(cluster.worker_nodes.count):
       {
-        cpu_cores = cluster.worker_node.cpu_cores
-        disc_size = cluster.worker_node.disc_size
-        memory    = cluster.worker_node.memory
+        cpu_cores = cluster.worker_nodes.cpu_cores
+        disc_size = cluster.worker_nodes.disc_size
+        memory    = cluster.worker_nodes.memory
       }
-  ][0], {})
+    ]
+  ])
 }
