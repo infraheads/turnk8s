@@ -87,7 +87,6 @@ jobs:
         env:
           TF_WORKSPACE: "default-ws"
           TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
-          TF_VAR_secondary_cluster_name: ${{ matrix.destroyable_resources }}
 
       - name: Selecting Terraform Workspace
         run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure
@@ -128,7 +127,6 @@ jobs:
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
         TF_VAR_cluster_name: ${{ matrix.cluster }}
-        TF_VAR_secondary_cluster_name: ${{ matrix.cluster }}
 
     - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
@@ -139,7 +137,6 @@ jobs:
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
       env:
         TF_VAR_cluster_name: ${{ matrix.cluster }}
-        TF_VAR_infrastructure_workspace: ${{ matrix.cluster }}-infrastructure
 
     - name: Generating kube-config
       uses: actions/upload-artifact@v4
@@ -148,7 +145,7 @@ jobs:
         path: /opt/kubeconfig/${{ matrix.cluster }}
         compression-level: 0
 
-    - name: Generateing Markdown
+    - name: Generating Markdown
       run: |
         echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY

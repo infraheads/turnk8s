@@ -1,7 +1,7 @@
 resource "proxmox_vm_qemu" "controlplane" {
   for_each = local.clusters
 
-  name        = "${var.secondary_cluster_name}-cp"
+  name        = "${var.cluster_name}-cp"
   target_node = local.proxmox_target_node
   iso         = local.talos_iso
 

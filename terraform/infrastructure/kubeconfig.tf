@@ -3,6 +3,6 @@ resource "terraform_data" "kubeconfig" {
   for_each   = local.clusters
 
   provisioner "local-exec" {
-    command = "sh ../../scripts/create_kubeconfig.sh \"${yamlencode(data.talos_cluster_kubeconfig.cp_ck[each.key].kubeconfig_raw)}\" ${var.secondary_cluster_name}"
+    command = "sh ../../scripts/create_kubeconfig.sh \"${yamlencode(data.talos_cluster_kubeconfig.cp_ck[each.key].kubeconfig_raw)}\" ${var.cluster_name}"
   }
 }

@@ -1,11 +1,13 @@
 name: 'Run Clusters'
 
 on:
-  push:
-    branches-ignore:
-      - 'main'
+  pull_request:
     paths:
-      - 'pr_config.yaml'
+      - 'config.yaml'
+    types:
+      - opened
+      - synchronize
+      - closed
       
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
@@ -17,13 +19,10 @@ env:
   TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
   TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
   TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
-  TF_VAR_config_file_path: '../../pr_config.yaml'
-  POSTFIX: "pr"
-  INFRASTRUCTURE_WORKSPACE_POSTFIX: "infrastructure-pr"
-  CLUSTER_WORKSPACE_POSTFIX: "cluster-pr"
+  TF_VAR_cluster_name: "turnk8s-${{ github.event.number }}"
 
 jobs:
-  setup_terraform:
+  setup_cluster:
     runs-on: self-hosted
     permissions:
       contents: read
@@ -33,7 +32,6 @@ jobs:
         working-directory: "terraform/infrastructure"
     outputs:
       clusters: ${{ steps.output_variables.outputs.clusters }}
-      removable_workspaces: ${{ steps.output_variables.outputs.removable_workspaces }}
     steps:
     - uses: actions/checkout@v4
 
@@ -56,14 +54,57 @@ jobs:
     - name: Extract values and set output variables
       id: output_variables
       run: |
-        clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/pr_config.yaml | jq -R -s -c 'split("\n")[:-1]')
-        workspaces=$(terraform workspace list | grep '\(-${{env.INFRASTRUCTURE_WORKSPACE_POSTFIX}}\|-${{env.CLUSTER_WORKSPACE_POSTFIX}}\)$' | sed 's/-${{env.INFRASTRUCTURE_WORKSPACE_POSTFIX}}$//;s/-${{env.CLUSTER_WORKSPACE_POSTFIX}}$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
-        echo "removable_workspaces=$(jq -n -c $workspaces-$clusters)" >> $GITHUB_OUTPUT
-        echo "clusters=$clusters" >> $GITHUB_OUTPUT
+        if [ ${{ github.event.pull_request.draft }} == true ];
+        then
+          echo "clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | grep ${{ env.TF_VAR_cluster_name }}')" >> $GITHUB_OUTPUT
+        else
+          echo "clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        fi
 
-  destroy_cluster:
-    needs: setup_terraform
-    if: ${{ needs.setup_terraform.outputs.removable_workspaces != '[]' }}
+  update_cluster:
+    needs: setup_cluster
+    if: ${{ needs.setup_terraform.outputs.clusters != '[]' && github.event.pull_request.draft == true }}
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform"
+    steps:
+    - name: Infrastructure updates
+      uses: ./.github/actions/apply_terraform_composite_action
+      with:
+        workspace: ${{ env.TF_VAR_cluster_name }}-infrastructure
+        plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-infrastructure
+        working_directory: "terraform/infrastructure"
+        tf_api_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Cluster updates
+      uses: ./.github/actions/apply_terraform_composite_action
+      with:
+        workspace: ${{ env.TF_VAR_cluster_name }}-cluster
+        plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-cluster
+        working_directory: "terraform/cluster"
+        tf_api_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Generating kube-config
+      uses: actions/upload-artifact@v4
+      with:
+        name: kube-config-${{ env.TF_VAR_cluster_name }}
+        path: /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
+        compression-level: 0
+
+    - name: Generating Markdown
+      run: |
+        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ env.TF_VAR_cluster_name }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
+        echo "Use `kubeconfig` file(s) to connect to the cluster, see the link above :point_up:" >> $GITHUB_STEP_SUMMARY
+
+  rollback_cluster:
+    needs: update_cluster
+    if: ${{ failure() }}
     runs-on: self-hosted
     permissions:
       contents: read
@@ -71,9 +112,6 @@ jobs:
     defaults:
       run:
         working-directory: "terraform/infrastructure"
-    strategy:
-      matrix:
-        destroyable_resources: ${{ fromJSON(needs.setup_terraform.outputs.removable_workspaces) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -90,11 +128,9 @@ jobs:
         run: terraform init
         env:
           TF_WORKSPACE: "default-ws"
-          TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
-          TF_VAR_secondary_cluster_name: "${{ matrix.destroyable_resources }}-${{ env.POSTFIX }}"
 
       - name: Selecting Terraform Workspace
-        run: terraform workspace select ${{ matrix.destroyable_resources }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}
+        run: terraform workspace select ${{ env.TF_VAR_cluster_name }}-infrastructure
 
       - name: Destroying Terraform
         run: |
@@ -103,58 +139,29 @@ jobs:
       - name: Destroying Terraform Cloud Workspace
         run: |
           terraform workspace select default-ws
-          terraform workspace delete -force ${{ matrix.destroyable_resources }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}
-          terraform workspace delete -force ${{ matrix.destroyable_resources }}-${{ env.CLUSTER_WORKSPACE_POSTFIX }}
+          terraform workspace delete -force ${{ env.TF_VAR_cluster_name }}-infrastructure
+          terraform workspace delete -force ${{ env.TF_VAR_cluster_name }}-cluster
 
       - name: Remove kubeconfig
-        run: rm /opt/kubeconfig/${{ matrix.destroyable_resources }}-${{ env.POSTFIX }}
+        run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
 
-  apply_cluster:
-    needs: setup_terraform
-    if: ${{ needs.setup_terraform.outputs.clusters != '[]' }}
+  ready_to_merge:
+    needs: setup_cluster
     runs-on: self-hosted
     permissions:
       contents: read
       pull-requests: write
-    defaults:
-      run:
-        working-directory: "terraform"
-    strategy:
-      matrix:
-        cluster: ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
     steps:
-    - name: Infrastructure updates
-      uses: ./.github/actions/apply_terraform_composite_action
-      with:
-        workspace: "${{ matrix.cluster }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}"
-        plan_output: tfplan-${{ matrix.cluster }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}
-        working_directory: "terraform/infrastructure"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
-      env:
-        TF_VAR_cluster_name: ${{ matrix.cluster }}
-        TF_VAR_secondary_cluster_name: "${{ matrix.cluster }}-${{ env.POSTFIX }}"
-
-    - name: Cluster updates
-      uses: ./.github/actions/apply_terraform_composite_action
-      with:
-        workspace: "${{ matrix.cluster }}-${{ env.CLUSTER_WORKSPACE_POSTFIX }}"
-        plan_output: tfplan-${{ matrix.cluster }}-${{ env.CLUSTER_WORKSPACE_POSTFIX }}
-        working_directory: "terraform/cluster"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
-      env:
-        TF_VAR_cluster_name: ${{ matrix.cluster }}
-        TF_VAR_infrastructure_workspace: "${{ matrix.cluster }}-${{ env.INFRASTRUCTURE_WORKSPACE_POSTFIX }}"
-
-    - name: Generating kube-config
-      uses: actions/upload-artifact@v4
-      with:
-        name: kube-config-${{ matrix.cluster }}-${{ env.POSTFIX }}
-        path: /opt/kubeconfig/${{ matrix.cluster }}-${{ env.POSTFIX }}
-        compression-level: 0
-
-    - name: Generateing Markdown
+    - name: Block PR merge if no cluster names
       run: |
-        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}-${{ env.POSTFIX }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
-        echo "Use `kubeconfig` file(s) to connect to the cluster, see the link above :point_up:" >> $GITHUB_STEP_SUMMARY
+        if [ ${{ needs.setup_terraform.outputs.clusters == '[]' ];
+        then
+          if [ ${{ github.event.pull_request.draft == true }} ];
+          then
+            echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
+            exit 1
+          else
+            echo "No new cluster names found for creation."
+            exit 1
+          fi
+        fi

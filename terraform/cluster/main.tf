@@ -13,7 +13,7 @@ data "terraform_remote_state" "infrastructure" {
   config = {
     organization = "infraheads"
     workspaces = {
-      name = "turnk8s-${var.infrastructure_workspace}"
+      name = "turnk8s-${var.cluster_name}-infrastructure"
     }
   }
 }

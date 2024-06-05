@@ -1,13 +1,7 @@
 variable "cluster_name" {
-  description = "The cluster name exists in config.yaml file."
+  description = "The cluster name exists in config file."
   type        = string
   default     = "turnk8s-cluster"
-}
-
-variable "infrastructure_workspace" {
-  description = "The workspace where infrastructure created."
-  type        = string
-  default     = "turnk8s-infrastructure-workspace"
 }
 
 variable "talos_version" {

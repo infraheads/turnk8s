@@ -1,9 +1,0 @@
-internal:
-  controlplane:
-    cpu_cores: 2
-    memory: 4096
-    disk_size: 10
-  worker_node:
-    cpu_cores: 2
-    memory: 2048
-    disc_size: 10
