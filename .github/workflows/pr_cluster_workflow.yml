@@ -144,8 +144,8 @@ jobs:
         run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
 
   ready_to_merge:
-    needs: setup_cluster
-    if: success()
+    needs: [setup_cluster, update_cluster]
+    if: ${{ needs.setup_cluster.result != 'failure' && needs.update_cluster.result != 'failure' }}
     runs-on: self-hosted
     permissions:
       contents: read
