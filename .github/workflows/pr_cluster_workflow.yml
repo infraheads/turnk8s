@@ -58,6 +58,10 @@ jobs:
           echo "clusters=$(yq e 'keys | .[] | select(. != ${{ env.TF_VAR_cluster_name }})' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
         fi
 
+    - name: Echo outputs
+      run: |
+        echo ${{ steps.output_variables.outputs.clusters }}
+
   update_cluster:
     needs: setup_cluster
     if: ${{ needs.setup_terraform.outputs.clusters != '[]' && github.event.pull_request.draft == true }}
@@ -152,6 +156,7 @@ jobs:
     - name: Block PR merge if no cluster names
       run: |
         echo "${{ needs.setup_terraform.outputs.clusters }}"
+        echo "${{ fromJSON(needs.setup_terraform.outputs.clusters) }}"
 #        echo "${{ needs.setup_terraform.outputs.clusters }}"
 #        echo "${{ fromJSON(needs.setup_terraform.outputs.clusters) }}"
 #        if [[ ${{ needs.setup_terraform.outputs.clusters }} == '[]' ]]; then/
