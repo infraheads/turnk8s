@@ -59,13 +59,9 @@ jobs:
         fi
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
-    - name: Echo outputs
-      run: |
-        echo ${{ steps.output_variables.outputs.clusters }}
-
   update_cluster:
     needs: setup_cluster
-    if: ${{ needs.setup_terraform.outputs.clusters != '[]' && github.event.pull_request.draft == true }}
+    if: ${{ needs.setup_cluster.outputs.clusters != '[]' && github.event.pull_request.draft == true }}
     runs-on: self-hosted
     permissions:
       contents: read
@@ -156,17 +152,12 @@ jobs:
     steps:
     - name: Block PR merge if no cluster names
       run: |
-        echo ${{ needs.setup_terraform.outputs.clusters }}
-        echo ${{ needs.setup_terraform.outputs.clusters }}
-
-#        echo "${{ needs.setup_terraform.outputs.clusters }}"
-#        echo "${{ fromJSON(needs.setup_terraform.outputs.clusters) }}"
-#        if [[ ${{ needs.setup_terraform.outputs.clusters }} == '[]' ]]; then/
-#          if [[ ${{ github.event.pull_request.draft }} == true ]]; then
-#            echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
-#            exit 1
-#          else
-#            echo "No new cluster names found for creation."
-#            exit 1
-#          fi
-#        fi
+        if [[ ${{ needs.setup_cluster.outputs.clusters }} == '[]' ]]; then
+          if [[ ${{ github.event.pull_request.draft }} == true ]]; then
+            echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
+            exit 1
+          else
+            echo "No new cluster names found for creation."
+            exit 1
+          fi
+        fi
