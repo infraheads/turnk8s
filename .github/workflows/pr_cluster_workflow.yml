@@ -5,9 +5,7 @@ on:
     paths:
       - 'config.yaml'
     types:
-      - opened
-      - synchronize
-      - closed
+      [opened, synchronize, closed]
     branches-ignore:
       - 'main'
       
