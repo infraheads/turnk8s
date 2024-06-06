@@ -8,6 +8,8 @@ on:
       - opened
       - synchronize
       - closed
+    branches-ignore:
+      - 'main'
       
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
