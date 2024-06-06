@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - 'config.yaml'
-    branches:
-      - '*'
+    branches-ignore:
+      - "main"
 
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
@@ -52,7 +52,7 @@ jobs:
     - name: Extract values and set output variables
       id: output_variables
       run: |
-        if [ ${{ github.event.pull_request.draft }} == true ];
+        if ${{ github.event.pull_request.draft }} == true;
         then
           echo "clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | grep ${{ env.TF_VAR_cluster_name }}')" >> $GITHUB_OUTPUT
         else
@@ -152,9 +152,9 @@ jobs:
     steps:
     - name: Block PR merge if no cluster names
       run: |
-        if [ ${{ needs.setup_terraform.outputs.clusters == '[]' ];
+        if ${{ needs.setup_terraform.outputs.clusters == '[]';
         then
-          if [ ${{ github.event.pull_request.draft == true }} ];
+          if ${{ github.event.pull_request.draft == true }};
           then
             echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
             exit 1
