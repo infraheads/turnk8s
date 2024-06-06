@@ -153,12 +153,12 @@ jobs:
       run: |
         echo ${{ needs.setup_terraform.outputs.clusters }}
         echo ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
-        if [[ ${{ needs.setup_terraform.outputs.clusters }} == '[]' ]]; then
-          if [[ ${{ github.event.pull_request.draft }} == true ]]; then
-            echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
-            exit 1
-          else
-            echo "No new cluster names found for creation."
-            exit 1
-          fi
-        fi
+#        if [[ ${{ needs.setup_terraform.outputs.clusters }} == '[]' ]]; then/
+#          if [[ ${{ github.event.pull_request.draft }} == true ]]; then
+#            echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
+#            exit 1
+#          else
+#            echo "No new cluster names found for creation."
+#            exit 1
+#          fi
+#        fi
