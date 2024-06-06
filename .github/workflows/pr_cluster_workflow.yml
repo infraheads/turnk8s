@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'config.yaml'
+    branches:
+      - '*'
 
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
