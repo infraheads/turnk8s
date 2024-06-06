@@ -151,8 +151,8 @@ jobs:
     steps:
     - name: Block PR merge if no cluster names
       run: |
-        if [[ ${{ needs.setup_terraform.outputs.clusters == '[]' ]]; then
-          if [[ ${{ github.event.pull_request.draft == true }} ]]; then
+        if [[ ${{ needs.setup_terraform.outputs.clusters}} == '[]' ]]; then
+          if [[ ${{ github.event.pull_request.draft}} == true ]]; then
             echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
             exit 1
           else
