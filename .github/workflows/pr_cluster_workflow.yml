@@ -55,7 +55,7 @@ jobs:
         if [[ ${{ github.event.pull_request.draft }} == true ]]; then
           clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | grep ${{ env.TF_VAR_cluster_name }} | jq -R -s -c 'split("\n")[:-1]')
         else
-          clusters=$(yq e 'keys | .[] | select(. != ${{ env.TF_VAR_cluster_name }})' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
+          clusters=$(yq e 'keys | .[] | select(. != "${{ env.TF_VAR_cluster_name }}")' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
         fi
         echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
