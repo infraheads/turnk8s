@@ -4,8 +4,7 @@ on:
   pull_request:
     paths:
       - 'config.yaml'
-    types:
-      [opened, synchronize, closed]
+    types: [opened, synchronize, closed]
     branches-ignore:
       - 'main'
       
