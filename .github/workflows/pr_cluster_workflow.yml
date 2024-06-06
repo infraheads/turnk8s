@@ -4,10 +4,7 @@ on:
   pull_request:
     paths:
       - 'config.yaml'
-    types: [opened, synchronize, closed]
-    branches-ignore:
-      - 'main'
-      
+
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
