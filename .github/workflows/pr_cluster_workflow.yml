@@ -156,8 +156,8 @@ jobs:
     steps:
     - name: Block PR merge if no cluster names
       run: |
-        echo "${{ needs.setup_terraform.outputs.clusters }}"
-        echo "${{ needs.setup_terraform.outputs.clusters }}"
+        echo ${{ needs.setup_terraform.outputs.clusters }}
+        echo ${{ needs.setup_terraform.outputs.clusters }}
 
 #        echo "${{ needs.setup_terraform.outputs.clusters }}"
 #        echo "${{ fromJSON(needs.setup_terraform.outputs.clusters) }}"
