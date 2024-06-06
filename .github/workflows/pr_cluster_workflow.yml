@@ -101,7 +101,7 @@ jobs:
 
   rollback_cluster:
     needs: update_cluster
-    if: ${{ failure() }}
+    if: failure()
     runs-on: self-hosted
     permissions:
       contents: read
