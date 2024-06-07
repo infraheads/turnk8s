@@ -18,6 +18,7 @@ env:
   TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
   TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
   TF_VAR_cluster_name: "turnk8s-${{ github.event.number }}"
+  TF_PREFIX: "turnk8s"
 
 jobs:
   setup_cluster:
@@ -73,7 +74,7 @@ jobs:
     - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ env.TF_VAR_cluster_name }}-infrastructure
+        workspace: ${{ env.TF_PREFIX }}-${{ env.TF_VAR_cluster_name }}-infrastructure
         plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-infrastructure
         working_directory: "terraform/infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
@@ -81,7 +82,7 @@ jobs:
     - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ env.TF_VAR_cluster_name }}-cluster
+        workspace: ${{ env.TF_PREFIX }}-${{ env.TF_VAR_cluster_name }}-cluster
         plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-cluster
         working_directory: "terraform/cluster"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
@@ -128,7 +129,7 @@ jobs:
           TF_WORKSPACE: "default-ws"
 
       - name: Selecting Terraform Workspace
-        run: terraform workspace select ${{ env.TF_VAR_cluster_name }}-infrastructure
+        run: terraform workspace select ${{ env.TF_PREFIX }}-${{ env.TF_VAR_cluster_name }}-infrastructure
 
       - name: Destroying Terraform
         run: |
@@ -137,8 +138,8 @@ jobs:
       - name: Destroying Terraform Cloud Workspace
         run: |
           terraform workspace select default-ws
-          terraform workspace delete -force ${{ env.TF_VAR_cluster_name }}-infrastructure
-          terraform workspace delete -force ${{ env.TF_VAR_cluster_name }}-cluster
+          terraform workspace delete -force ${{ env.TF_PREFIX }}-${{ env.TF_VAR_cluster_name }}-infrastructure
+          terraform workspace delete -force ${{ env.TF_PREFIX }}-${{ env.TF_VAR_cluster_name }}-cluster
 
       - name: Remove kubeconfig
         run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
