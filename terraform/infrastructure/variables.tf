@@ -40,9 +40,15 @@ variable "github_token" {
 }
 
 variable "cluster_name" {
-  description = "The name of the cluster."
+  description = "The cluster name exists in config file."
   type        = string
   default     = "turnk8s-cluster"
+}
+
+variable "config_file_path" {
+  description = "The config.yaml file, where clusters are described."
+  type = string
+  default = "../../config.yaml"
 }
 
 variable "controlplane_cores" {
