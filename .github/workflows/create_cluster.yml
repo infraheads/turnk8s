@@ -17,7 +17,6 @@ env:
   TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
   TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
   TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
-  T_PREFIX: "turnk8s"
 
 jobs:
   setup_terraform:
@@ -33,6 +32,10 @@ jobs:
       removable_workspaces: ${{ steps.output_variables.outputs.removable_workspaces }}
     steps:
     - uses: actions/checkout@v4
+      
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.14.0
 
     - name: Setup Terraform Environment
       uses: hashicorp/setup-terraform@v3
@@ -72,7 +75,9 @@ jobs:
       matrix:
         destroyable_resources: ${{ fromJSON(needs.setup_terraform.outputs.removable_workspaces) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.14.0
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -90,7 +95,7 @@ jobs:
           TF_VAR_cluster_name: ${{ matrix.destroyable_resources }}
 
       - name: Selecting Terraform Workspace
-        run: terraform workspace select ${{ env.TF_PREFIX }}-${{ matrix.destroyable_resources }}-infrastructure
+        run: terraform workspace select ${{ matrix.destroyable_resources }}-infrastructure
 
       - name: Destroying Terraform
         run: |
@@ -99,8 +104,8 @@ jobs:
       - name: Destroying Terraform Cloud Workspace
         run: |
           terraform workspace select default-ws
-          terraform workspace delete -force ${{ env.TF_PREFIX }}-${{ matrix.destroyable_resources }}-infrastructure
-          terraform workspace delete -force ${{ env.TF_PREFIX }}-${{ matrix.destroyable_resources }}-cluster
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-infrastructure
+          terraform workspace delete -force ${{ matrix.destroyable_resources }}-cluster
 
       - name: Remove kubeconfig
         run: rm /opt/kubeconfig/${{ matrix.destroyable_resources }}
@@ -119,10 +124,14 @@ jobs:
       matrix:
         cluster: ${{ fromJSON(needs.setup_terraform.outputs.clusters) }}
     steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.14.0
+
     - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ env.TF_PREFIX }}-${{ matrix.cluster }}-infrastructure
+        workspace: ${{ matrix.cluster }}-infrastructure
         plan_output: tfplan-${{ matrix.cluster }}-infrastructure
         working_directory: "terraform/infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
@@ -132,7 +141,7 @@ jobs:
     - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
-        workspace: ${{ env.TF_PREFIX }}-${{ matrix.cluster }}-cluster
+        workspace: ${{ matrix.cluster }}-cluster
         plan_output: tfplan-${{ matrix.cluster }}-cluster
         working_directory: "terraform/cluster"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
