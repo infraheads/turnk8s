@@ -74,6 +74,10 @@ jobs:
       run:
         working-directory: "terraform"
     steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
     - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
