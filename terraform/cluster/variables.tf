@@ -70,3 +70,19 @@ variable "netris_controller_password" {
   type        = string
   sensitive   = true
 }
+
+# Monitoring Configuration
+variable "prometheus_chart_name" {
+  type = string
+  default = "kube-prometheus-stack"
+}
+
+variable "prometheus_chart_version" {
+  type = string
+  default = "60.5.0"
+}
+
+variable "prometheus_chart_repository" {
+  type = string
+  default = "https://prometheus-community.github.io/helm-charts"
+}
