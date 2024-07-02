@@ -16,8 +16,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
@@ -26,13 +24,13 @@ runs:
 
     - name: Configure Terraform Cache
       run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
-#      shell: bash
+      shell: bash
 
     - name: Initializing Terraform
       run: |
         cd ${{ inputs.working_directory }}
         terraform init
-#      shell: bash
+      shell: bash
       env:
         TF_WORKSPACE: "default-ws"
 
@@ -41,21 +39,21 @@ runs:
       run: |
         cd ${{ inputs.working_directory }}
         terraform workspace select -or-create ${{ inputs.workspace }}
-#      shell: bash
+      shell: bash
 
     - name: Validating Terraform
       id: validate
       run: |
         cd ${{ inputs.working_directory }}
         terraform validate -no-color
-#      shell: bash
+      shell: bash
 
     - name: Planning Terraform
       id: plan
       run: |
         cd ${{ inputs.working_directory }}
         terraform plan -out=${{ inputs.plan_output }}
-#      shell: bash
+      shell: bash
 
     - name: Applying Terraform
       id: apply
@@ -73,4 +71,4 @@ runs:
           """
         exit 1
         fi
-#      shell: bash
+      shell: bash

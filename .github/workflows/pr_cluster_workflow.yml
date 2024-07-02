@@ -35,7 +35,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 20.14.0
 
     - name: Setup Terraform Environment
       uses: hashicorp/setup-terraform@v3
@@ -76,7 +76,7 @@ jobs:
     steps:
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 20.14.0
 
     - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
@@ -121,7 +121,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.14.0
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -154,7 +154,7 @@ jobs:
         run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
 
   ready_to_merge:
-    needs: [setup_cluster]
+    needs: [setup_cluster, update_cluster]
     if: ${{ needs.setup_cluster.result != 'failure' && needs.update_cluster.result != 'failure' }}
     runs-on: self-hosted
     permissions:
