@@ -1,4 +1,4 @@
-internal:
+turnk8s-23:
   controlplane:
     cpu_cores: 2
     memory: 4096
@@ -7,4 +7,4 @@ internal:
     count: 1
     cpu_cores: 2
     memory: 2048
-    disc_size: 10
+    disc_size: 15
