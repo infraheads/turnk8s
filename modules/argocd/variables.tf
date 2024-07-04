@@ -17,7 +17,7 @@ variable "argocd_chart_name" {
 
 variable "argocd_chart_version" {
   type    = string
-  default = "6.7.18"
+  default = "7.3.4"
 }
 
 variable "argocd_chart_repository" {
@@ -38,7 +38,7 @@ variable "app_of_apps_chart_name" {
 
 variable "app_of_apps_chart_version" {
   type    = string
-  default = "1.6.2"
+  default = "2.0.0"
 }
 
 variable "app_of_apps_chart_repository" {
