@@ -24,7 +24,7 @@ variable "argocd_chart_name" {
 
 variable "argocd_chart_version" {
   type    = string
-  default = "6.7.18"
+  default = "7.3.4"
 }
 
 variable "argocd_chart_repository" {
@@ -45,7 +45,7 @@ variable "argocd_app_of_apps_chart_name" {
 
 variable "argocd_app_of_apps_chart_version" {
   type    = string
-  default = "1.6.2"
+  default = "2.0.0"
 }
 
 variable "argocd_app_of_apps_chart_repository" {
@@ -69,4 +69,20 @@ variable "netris_controller_password" {
   description = "Netris controller password"
   type        = string
   sensitive   = true
+}
+
+# Monitoring Configuration
+variable "prometheus_chart_name" {
+  type = string
+  default = "kube-prometheus-stack"
+}
+
+variable "prometheus_chart_version" {
+  type = string
+  default = "60.5.0"
+}
+
+variable "prometheus_chart_repository" {
+  type = string
+  default = "https://prometheus-community.github.io/helm-charts"
 }

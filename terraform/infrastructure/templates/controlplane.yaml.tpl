@@ -15,5 +15,7 @@ cluster:
         image: registry.k8s.io/kube-controller-manager:${kubernetes-version}
     proxy:
         image: registry.k8s.io/kube-proxy:${kubernetes-version}
+        extraArgs:
+            metrics-bind-address: 0.0.0.0:10249
     scheduler:
         image: registry.k8s.io/kube-scheduler:${kubernetes-version}
