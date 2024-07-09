@@ -2,8 +2,6 @@ name: 'Automated Cluster Deployment for Pull Requests'
 
 on:
   pull_request:
-    branches:
-      - '*'
     branches-ignore:
       - 'main'
     paths:
