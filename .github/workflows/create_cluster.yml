@@ -153,4 +153,8 @@ jobs:
         echo "Use the 'kubeconfig' file(s) to connect to the cluster, which is(are) attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
 
     - name: Remove kube-config
-      run: rm /opt/kubeconfig/${{ matrix.cluster }}
+      run: |
+        if [ -f /opt/kubeconfig/${{ matrix.cluster }} ];
+        then
+          rm /opt/kubeconfig/${{ matrix.cluster }}
+        fi

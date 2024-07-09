@@ -106,4 +106,8 @@ jobs:
           echo "Use the 'kubeconfig' file to connect to the cluster, which is attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
 
       - name: Remove kube-config
-        run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
+        run: |
+          if [ -f /opt/kubeconfig/${{ env.TF_VAR_cluster_name }} ];
+          then
+            rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
+          fi
