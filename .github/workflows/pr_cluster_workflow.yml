@@ -27,11 +27,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      # 1) Checks if config.yaml is empty or not. All clusters will be destroyed if config.yaml is empty.
-      # 2) For draft PRs, the cluster name must be in the format "turnk8s-<PR_NUMBER>",
-      #    as it is assumed to be a test cluster for modifying logic and testing validations and features.
-      # 3) For non-draft PRs, the cluster name must not be started with "turnk8s-" prefix,
-      #    as these clusters are not for testing and should follow a different naming convention.
+
       - name: Ensure validity of the config.yaml file
         run: |
         # Checks if config.yaml is empty or not. All clusters will be destroyed if config.yaml is empty.
