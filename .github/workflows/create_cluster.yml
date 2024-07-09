@@ -97,6 +97,13 @@ jobs:
         terraform workspace delete -force ${{ matrix.cluster }}-infrastructure
         terraform workspace delete -force ${{ matrix.cluster }}-cluster
 
+    - name: Remove kube-config
+      run: |
+        if [ -f /opt/kubeconfig/${{ matrix.cluster }} ];
+        then
+          rm /opt/kubeconfig/${{ matrix.cluster }}
+        fi
+
   apply_cluster:
     needs: setup_terraform
     if: ${{ needs.setup_terraform.outputs.desired_clusters != '[]' }}
@@ -151,10 +158,3 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
         echo "Use the 'kubeconfig' file(s) to connect to the cluster, which is(are) attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
-
-    - name: Remove kube-config
-      run: |
-        if [ -f /opt/kubeconfig/${{ matrix.cluster }} ];
-        then
-          rm /opt/kubeconfig/${{ matrix.cluster }}
-        fi

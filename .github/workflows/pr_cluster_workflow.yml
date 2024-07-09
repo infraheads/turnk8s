@@ -104,10 +104,3 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ env.TF_VAR_cluster_name }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
           echo "Use the 'kubeconfig' file to connect to the cluster, which is attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
-
-      - name: Remove kube-config
-        run: |
-          if [ -f /opt/kubeconfig/${{ env.TF_VAR_cluster_name }} ];
-          then
-            rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
-          fi
