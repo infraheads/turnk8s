@@ -31,11 +31,6 @@ jobs:
       - name: Ensure validity of the config.yaml file
         run: |
           clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-        # 1) Checks if config.yaml is empty or not. All clusters will be destroyed if config.yaml is empty.
-        # 2) For draft PRs, the cluster name must be in the format "turnk8s-<PR_NUMBER>",
-        #    as it is assumed to be a test cluster for modifying logic and testing validations and features.
-        # 3) For non-draft PRs, the cluster name must not be started with "turnk8s-" prefix,
-        #    as these clusters are not for testing and should follow a different naming convention.
           if ! ([[ $clusters == '[]' ]] || \
                 [[ ${{ github.event.pull_request.draft }} == true ]] && [[ ${{ fromJSON(clusters) }} | jq -R -s -c 'length' == 1 ]] && [[ ${{ fromJSON(clusters) }}[0] == "${{ env.TF_VAR_cluster_name }}" ]] || \
                 [[ ${{ github.event.pull_request.draft }} == false ]] && [[ ${{ fromJSON(clusters) }} | map(startswith("turnk8s-")) | any == false]]); then
