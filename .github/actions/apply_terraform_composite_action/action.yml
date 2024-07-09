@@ -17,7 +17,7 @@ runs:
   using: "composite"
   steps:
     - name: Initialize Terraform
-      uses: ./actions/initialize_terraform_composite_action
+      uses: ./.github/actions/initialize_terraform_composite_action
       with:
         working_directory: ${{ inputs.working_directory }}
         tf_api_token: ${{ inputs.tf_api_token }}
