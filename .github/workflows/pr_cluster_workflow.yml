@@ -1,4 +1,4 @@
-name: 'Run Clusters'
+name: 'Automated Cluster Deployment for Pull Requests'
 
 on:
   pull_request:
@@ -20,52 +20,31 @@ env:
   TF_VAR_cluster_name: "turnk8s-${{ github.event.number }}"
 
 jobs:
-  setup_cluster:
+  checking_yaml_correctness:
     runs-on: self-hosted
     permissions:
       contents: read
       pull-requests: write
-    defaults:
-      run:
-        working-directory: "terraform/infrastructure"
-    outputs:
-      clusters: ${{ steps.output_variables.outputs.clusters }}
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20.14.0
-
-    - name: Setup Terraform Environment
-      uses: hashicorp/setup-terraform@v3
-      with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-        terraform_version: 1.7.5
-
-    - name: Configure Terraform Cache
+    - name: Ensure validity of the config.yaml file
       run: |
-        echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
-
-    - name: Initializing Terraform
-      id: init
-      run: terraform init -upgrade
-      env:
-        TF_WORKSPACE: "default-ws"
-
-    - name: Extract values and set output variables
-      id: output_variables
-      run: |
-        if [[ ${{ github.event.pull_request.draft }} == true ]]; then
-          clusters=$(yq e 'keys | .[] | select(. == "${{ env.TF_VAR_cluster_name }}")' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-        else
-          clusters=$(yq e 'keys | .[] | select(. != "${{ env.TF_VAR_cluster_name }}")' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
+        clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
+      # 1) Checks if config.yaml is empty or not. All clusters will be destroyed if config.yaml is empty.
+      # 2) For draft PRs, the cluster name must be in the format "turnk8s-<PR_NUMBER>",
+      #    as it is assumed to be a test cluster for modifying logic and testing validations and features.
+      # 3) For non-draft PRs, the cluster name must not be started with "turnk8s-" prefix,
+      #    as these clusters are not for testing and should follow a different naming convention.
+        if ! ([[ $clusters == '[]' ]] || \
+              [[ ${{ github.event.pull_request.draft }} == true ]] && [[ ${{ fromJSON(clusters) }} | jq -R -s -c 'length' == 1 ]] && [[ ${{ fromJSON(clusters) }}[0] == "${{ env.TF_VAR_cluster_name }}" ]] || \
+              [[ ${{ github.event.pull_request.draft }} == false ]] && [[ ${{ fromJSON(clusters) }} | map(startswith("turnk8s-")) | any == false]]); then
+          exit 1
         fi
-        echo "clusters=$clusters" >> $GITHUB_OUTPUT
 
-  update_cluster:
-    needs: setup_cluster
-    if: ${{ needs.setup_cluster.outputs.clusters != '[]' && github.event.pull_request.draft == true }}
+  apply_cluster:
+    needs: checking_yaml_correctness
+    if: ${{ github.event.pull_request.draft == true }}
     runs-on: self-hosted
     permissions:
       contents: read
@@ -74,10 +53,12 @@ jobs:
       run:
         working-directory: "terraform"
     steps:
+    # Setup Node.js on self-hosted runner for Terraform actions
     - uses: actions/setup-node@v4
       with:
         node-version: 20.14.0
 
+    # Using composite actions for applying cluster's infrastructure changes
     - name: Infrastructure updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
@@ -86,6 +67,7 @@ jobs:
         working_directory: "terraform/infrastructure"
         tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
+    # Using composite actions for applying cluster's applications and tools changes
     - name: Cluster updates
       uses: ./.github/actions/apply_terraform_composite_action
       with:
@@ -106,69 +88,7 @@ jobs:
         echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ env.TF_VAR_cluster_name }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
-        echo "Use `kubeconfig` file(s) to connect to the cluster, see the link above :point_up:" >> $GITHUB_STEP_SUMMARY
+        echo "Use the 'kubeconfig' file to connect to the cluster, which is attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
 
-  rollback_cluster:
-    needs: update_cluster
-    if: ${{ needs.update_cluster.result == 'failure' }}
-    runs-on: self-hosted
-    permissions:
-      contents: read
-      pull-requests: write
-    defaults:
-      run:
-        working-directory: "terraform/infrastructure"
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20.14.0
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-          terraform_version: 1.7.5
-
-      - name: Configure Terraform Cache
-        run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
-
-      - name: Initializing Terraform
-        run: terraform init
-        env:
-          TF_WORKSPACE: "default-ws"
-
-      - name: Selecting Terraform Workspace
-        run: terraform workspace select ${{ env.TF_VAR_cluster_name }}-infrastructure
-
-      - name: Destroying Terraform
-        run: |
-          terraform destroy -auto-approve
-
-      - name: Destroying Terraform Cloud Workspace
-        run: |
-          terraform workspace select default-ws
-          terraform workspace delete -force ${{ env.TF_VAR_cluster_name }}-infrastructure
-          terraform workspace delete -force ${{ env.TF_VAR_cluster_name }}-cluster
-
-      - name: Remove kubeconfig
-        run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
-
-  ready_to_merge:
-    needs: [setup_cluster, update_cluster]
-    if: ${{ needs.setup_cluster.result != 'failure' && needs.update_cluster.result != 'failure' }}
-    runs-on: self-hosted
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-    - name: Block PR merge if no cluster names
-      run: |
-        if [[ ${{ needs.setup_cluster.outputs.clusters }} == '[]' ]]; then
-          if [[ ${{ github.event.pull_request.draft }} == true ]]; then
-            echo "There is no cluster with name ${{ env.TF_VAR_cluster_name }}."
-            exit 1
-          else
-            echo "No new cluster names found for creation."
-            exit 1
-          fi
-        fi
+    - name: Remove kube-config
+      run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}

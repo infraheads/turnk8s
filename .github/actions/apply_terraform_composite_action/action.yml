@@ -16,23 +16,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+    - name: Initialize Terraform
+      uses: ./actions/initialize_terraform_composite_action
       with:
-        cli_config_credentials_token: ${{ inputs.tf_api_token }}
-        terraform_version: 1.7.5
-
-    - name: Configure Terraform Cache
-      run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
-      shell: bash
-
-    - name: Initializing Terraform
-      run: |
-        cd ${{ inputs.working_directory }}
-        terraform init
-      shell: bash
-      env:
-        TF_WORKSPACE: "default-ws"
+        working_directory: ${{ inputs.working_directory }}
+        tf_api_token: ${{ inputs.tf_api_token }}
 
     - name: Selecting Terraform Workspace
       id: workspace
@@ -59,16 +47,5 @@ runs:
       id: apply
       run: |
         cd ${{ inputs.working_directory }}
-        set +e
         terraform apply ${{ inputs.plan_output }}
-        tf_exitcode=$?
-        set -e
-        if [ $tf_exitcode -ne 0 ];
-        then
-        echo """
-          Error: Unable to create a Cluster.
-          Message: This could be caused by a lack of resources in the server. Please review the server resources and try again.
-          """
-        exit 1
-        fi
       shell: bash
