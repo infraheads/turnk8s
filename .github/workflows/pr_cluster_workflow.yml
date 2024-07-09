@@ -30,10 +30,10 @@ jobs:
 
       - name: Ensure validity of the config.yaml file
         run: |
-          if [[ -s ${GITHUB_WORKSPACE}/config.yaml ]]; then
+          if [[ -s "${GITHUB_WORKSPACE}/config.yaml" ]]; then
             clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-            if !([[ ${{ github.event.pull_request.draft }} == true ]] && [[ echo $clusters | jq -r '. | length' == 1 ]] && [[ echo $clusters | jq -r '.[0]' == "${{ env.TF_VAR_cluster_name }}" ]] || \
-                [[ ${{ github.event.pull_request.draft }} == false ]] && [[ echo $clusters | jq -r '. | map(startswith("turnk8s-")) | any' == false]]); then
+            if !([[ ${{ github.event.pull_request.draft }} == true ]] && [[ $(echo $clusters | jq -r '. | length') == 1 ]] && [[ $(echo $clusters | jq -r '.[0]') == "${{ env.TF_VAR_cluster_name }}" ]] || \
+                [[ ${{ github.event.pull_request.draft }} == false ]] && [[ $(echo $clusters | jq -r '. | map(startswith("turnk8s-")) | any') == false]]); then
             exit 1
           fi
 
