@@ -32,8 +32,8 @@ jobs:
         run: |
           clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
           if ! ([[ $clusters == '[]' ]] || \
-                [[ ${{ github.event.pull_request.draft }} == true ]] && [[ ${{ fromJSON(clusters) }} | jq -R -s -c 'length' == 1 ]] && [[ ${{ fromJSON(clusters) }}[0] == "${{ env.TF_VAR_cluster_name }}" ]] || \
-                [[ ${{ github.event.pull_request.draft }} == false ]] && [[ ${{ fromJSON(clusters) }} | map(startswith("turnk8s-")) | any == false]]); then
+                [[ ${{ github.event.pull_request.draft }} == true ]] && [[ ${{ fromJSON($clusters) }} | jq -R -s -c 'length' == 1 ]] && [[ ${{ fromJSON($clusters) }}[0] == "${{ env.TF_VAR_cluster_name }}" ]] || \
+                [[ ${{ github.event.pull_request.draft }} == false ]] && [[ ${{ fromJSON($clusters) }} | map(startswith("turnk8s-")) | any == false]]); then
             exit 1
           fi
 
