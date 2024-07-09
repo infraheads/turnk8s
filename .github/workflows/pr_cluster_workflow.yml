@@ -26,21 +26,21 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Ensure validity of the config.yaml file
-      run: |
-        clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-      # 1) Checks if config.yaml is empty or not. All clusters will be destroyed if config.yaml is empty.
-      # 2) For draft PRs, the cluster name must be in the format "turnk8s-<PR_NUMBER>",
-      #    as it is assumed to be a test cluster for modifying logic and testing validations and features.
-      # 3) For non-draft PRs, the cluster name must not be started with "turnk8s-" prefix,
-      #    as these clusters are not for testing and should follow a different naming convention.
-        if ! ([[ $clusters == '[]' ]] || \
-              [[ ${{ github.event.pull_request.draft }} == true ]] && [[ ${{ fromJSON(clusters) }} | jq -R -s -c 'length' == 1 ]] && [[ ${{ fromJSON(clusters) }}[0] == "${{ env.TF_VAR_cluster_name }}" ]] || \
-              [[ ${{ github.event.pull_request.draft }} == false ]] && [[ ${{ fromJSON(clusters) }} | map(startswith("turnk8s-")) | any == false]]); then
-          exit 1
-        fi
+      - name: Ensure validity of the config.yaml file
+        run: |
+          clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
+        # 1) Checks if config.yaml is empty or not. All clusters will be destroyed if config.yaml is empty.
+        # 2) For draft PRs, the cluster name must be in the format "turnk8s-<PR_NUMBER>",
+        #    as it is assumed to be a test cluster for modifying logic and testing validations and features.
+        # 3) For non-draft PRs, the cluster name must not be started with "turnk8s-" prefix,
+        #    as these clusters are not for testing and should follow a different naming convention.
+          if ! ([[ $clusters == '[]' ]] || \
+                [[ ${{ github.event.pull_request.draft }} == true ]] && [[ ${{ fromJSON(clusters) }} | jq -R -s -c 'length' == 1 ]] && [[ ${{ fromJSON(clusters) }}[0] == "${{ env.TF_VAR_cluster_name }}" ]] || \
+                [[ ${{ github.event.pull_request.draft }} == false ]] && [[ ${{ fromJSON(clusters) }} | map(startswith("turnk8s-")) | any == false]]); then
+            exit 1
+          fi
 
   apply_cluster:
     needs: checking_yaml_correctness
@@ -53,42 +53,42 @@ jobs:
       run:
         working-directory: "terraform"
     steps:
-    # Setup Node.js on self-hosted runner for Terraform actions
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20.14.0
+      # Setup Node.js on self-hosted runner for Terraform actions
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.14.0
 
-    # Using composite actions for applying cluster's infrastructure changes
-    - name: Infrastructure updates
-      uses: ./.github/actions/apply_terraform_composite_action
-      with:
-        workspace: ${{ env.TF_VAR_cluster_name }}-infrastructure
-        plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-infrastructure
-        working_directory: "terraform/infrastructure"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
+      # Using composite actions for applying cluster's infrastructure changes
+      - name: Infrastructure updates
+        uses: ./.github/actions/apply_terraform_composite_action
+        with:
+          workspace: ${{ env.TF_VAR_cluster_name }}-infrastructure
+          plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-infrastructure
+          working_directory: "terraform/infrastructure"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
-    # Using composite actions for applying cluster's applications and tools changes
-    - name: Cluster updates
-      uses: ./.github/actions/apply_terraform_composite_action
-      with:
-        workspace: ${{ env.TF_VAR_cluster_name }}-cluster
-        plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-cluster
-        working_directory: "terraform/cluster"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
+      # Using composite actions for applying cluster's applications and tools changes
+      - name: Cluster updates
+        uses: ./.github/actions/apply_terraform_composite_action
+        with:
+          workspace: ${{ env.TF_VAR_cluster_name }}-cluster
+          plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-cluster
+          working_directory: "terraform/cluster"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Generating kube-config
-      uses: actions/upload-artifact@v4
-      with:
-        name: kube-config-${{ env.TF_VAR_cluster_name }}
-        path: /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
-        compression-level: 0
+      - name: Generating kube-config
+        uses: actions/upload-artifact@v4
+        with:
+          name: kube-config-${{ env.TF_VAR_cluster_name }}
+          path: /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
+          compression-level: 0
 
-    - name: Generating Markdown
-      run: |
-        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ env.TF_VAR_cluster_name }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
-        echo "Use the 'kubeconfig' file to connect to the cluster, which is attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
+      - name: Generating Markdown
+        run: |
+          echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ env.TF_VAR_cluster_name }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
+          echo "Use the 'kubeconfig' file to connect to the cluster, which is attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
 
-    - name: Remove kube-config
-      run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
+      - name: Remove kube-config
+        run: rm /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
