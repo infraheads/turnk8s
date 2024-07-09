@@ -2,8 +2,8 @@ name: 'Automated Cluster Deployment for Pull Requests'
 
 on:
   pull_request:
-    branches-ignore:
-      - 'main'
+    branches:
+      - '*'
     paths:
       - 'config.yaml'
 
