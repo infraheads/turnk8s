@@ -1,3 +1,14 @@
+# This workflow is designed for creating clusters using "config.yaml" file to implement GitOps solution with the help of "turnk8s", which includes 2 jobs.
+# It is possible to create or delete clusters based on the creating PRs, by updating the "config.yaml" file. In simple words, it describes the existing clusters on the server.
+# The "config.yaml" file can be updated in the following ways:
+#   1) For testing new features, the config.yaml file should only contain one cluster description(referred to as "test-cluster"), which must be in the "turnk8s-<PR_NUMBER>" format.This can be done by creating a draft PR.
+#   2) For modifications(creating, updating, or deleting clusters), simply create a normal PR and describe the cluster(s) within the "config.yaml" file. The clusters must not start with the "turnk8s-" prefix.
+#      *Note: Modifications take effect upon merging normal PRs into the main branch.
+#   3) All clusters are destroyed if the "config.yaml" file is empty.
+# The above-described cases are checked in the first job, called "checking_yaml_correctness".
+# The second job, "apply_cluster" starts only if the PR is a draft. As a result of the workflow, the cluster's kube-config file will be found attached in the "Artifacts" section.
+# *Note: The "test-cluster" is destroyed after merging the draft PR into the main branch.
+
 name: 'Automated Cluster Deployment for Pull Requests'
 
 on:
@@ -28,14 +39,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # * Checks if config.yaml is empty or not. All clusters will be destroyed if config.yaml is empty.
-      # * For draft PRs, the cluster name must be in the format "turnk8s-<PR_NUMBER>",
-      #    as it is assumed to be a test cluster for modifying logic and testing validations and features.
-      # * For non-draft PRs, the cluster name must not be started with "turnk8s-" prefix,
-      #    as these clusters are not for testing and should follow a different naming convention.
+      # * In case of empty config.yaml destroys all clusters.
+      # * In case of "turnk8s" logic changes, we conventionally create a draft PR and rely on the type of PR in the pipeline's logic which must be in the "turnk8s-<PR_NUMBER>" format.
+      # * For cluster creation we use normal PRs. In such PRs, the added cluster name should not have "turnk8s-" prefix.
       - name: Ensure validity of the config.yaml file
         run: |
-          if [ -s ${GITHUB_WORKSPACE}/config.yaml ];
+          if [ $(wc -c < "${GITHUB_WORKSPACE}/config.yaml") -ne 0  ];
           then
             clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
             if [[ ${{ github.event.pull_request.draft }} == true ]] && [ $(echo "$clusters" | jq -r '. | length') == 1 ] && [ $(echo "$clusters" | jq -r '.[0]') != "${{ env.TF_VAR_cluster_name }}" ];
