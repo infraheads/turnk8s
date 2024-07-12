@@ -32,10 +32,10 @@ turnk8s-cluster:
     cpu_cores: 2
     memory: 4096
     disk_size: 20
-  worker_node:
+  worker_nodes:
     cpu_cores: 2
     memory: 4096
-    disc_size: 20
+    disk_size: 20
 ```
 </details>
 
@@ -46,14 +46,14 @@ Please note that you need Proxmox hosts deployed and available for your GitHub r
 
 Configuration parameters:
 * **the main key is the cluster name:(Required)** - A unique cluster name
-* **versions.talos:(Required)** - Talos Linux version: Supported versions are v1.7.1, v1.7.1, v1.6.7
+* **versions.talos:(Required)** - Talos Linux version: Supported versions are v1.7.1, v1.7.0, v1.6.7
 * **versions.k8s:(Required)** - Kubernetes version: Supported versions are v1.30.0, v1.29.3
 * **controlplane.cpu_cores:(Required)** - controlplane node cores :(min 2)
 * **controlplane.memory:(Required)** - controlpalne node RAM (min 2048)
 * **controlplane.disk_size:(Required)** - controlplane node disk size:(min 10)
-* **worker_node.cpu_cores:(Required)** - worker node cores:(min 1)
-* **worker_node.memory:(Required)** - worker node RAM:(min 2048)
-* **worker_node.disc_size:(Required)** - worker node disk size:(min 10)
+* **worker_nodes.cpu_cores:(Required)** - worker node cores:(min 1)
+* **worker_nodes.memory:(Required)** - worker node RAM:(min 2048)
+* **worker_nodes.disk_size:(Required)** - worker node disk size:(min 10)
 
 Pushing config.yaml triggers a GitHub actions workflow. The Kubernetes configuration files and the Kubernetes services repo URL are shown on the summary page when the workflow is complete.
 

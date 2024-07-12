@@ -10,7 +10,7 @@ locals {
       for i in range(cluster.worker_nodes.count):
       {
         cpu_cores = cluster.worker_nodes.cpu_cores
-        disc_size = cluster.worker_nodes.disc_size
+        disk_size = cluster.worker_nodes.disk_size
         memory    = cluster.worker_nodes.memory
       }
     ]
