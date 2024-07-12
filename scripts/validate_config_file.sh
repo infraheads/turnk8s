@@ -74,4 +74,5 @@ then
   for cluster in $clusters; do
     validate_cluster "$cluster"
   done
+  echo "The $FILE is valid."
 fi
