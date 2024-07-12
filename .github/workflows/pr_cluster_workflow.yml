@@ -46,7 +46,7 @@ jobs:
       # * For cluster creation we use normal PRs. In such PRs, the added cluster name should not have "turnk8s-" prefix.
       - name: Ensure validity of the config.yaml file
         run: |
-            if [[ $("${GITHUB_WORKSPACE}/scripts/validate_config_file.sh" "${GITHUB_WORKSPACE}/config.yaml") ]];
+            if [[ $(bash "${GITHUB_WORKSPACE}/scripts/validate_config_file.sh" "${GITHUB_WORKSPACE}/config.yaml") ]];
             then
               clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
               if [ ${{ github.event.pull_request.draft }} == true ] && [ $(echo "$clusters" | jq -r '. | length') == 1 ] && [ $(echo "$clusters" | jq -r '.[0]') != "${{ env.TF_VAR_cluster_name }}" ];
@@ -76,6 +76,8 @@ jobs:
     defaults:
       run:
         working-directory: "terraform"
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
     steps:
       - uses: actions/checkout@v4
 
