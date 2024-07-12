@@ -45,6 +45,7 @@ jobs:
       # * In case of "turnk8s" logic changes, we conventionally create a draft PR and rely on the type of PR in the pipeline's logic which must be in the "turnk8s-<PR_NUMBER>" format.
       # * For cluster creation we use normal PRs. In such PRs, the added cluster name should not have "turnk8s-" prefix.
       - name: Ensure validity of the config.yaml file
+        shell: bash
         run: |
             if [[ $(bash "${GITHUB_WORKSPACE}/scripts/validate_config_file.sh" "${GITHUB_WORKSPACE}/config.yaml") ]];
             then
