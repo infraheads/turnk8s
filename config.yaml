@@ -1,4 +1,4 @@
-turnk8s-188:
+turnk8s-18:
   controlplane:
     cpu_cores: 2
     memory: 4096
