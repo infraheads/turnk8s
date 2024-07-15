@@ -47,6 +47,7 @@ jobs:
       - name: Ensure validity of the config.yaml file
         shell: bash
         run: |
+            set -e
             if [[ $(bash "${GITHUB_WORKSPACE}/scripts/validate_config_file.sh" "${GITHUB_WORKSPACE}/config.yaml") ]];
             then
               clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
