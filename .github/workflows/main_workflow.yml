@@ -1,3 +1,10 @@
+# This workflow is designed for creating clusters using "config.yaml" file to implement GitOps solution with the help of "turnk8s".
+# It is started to run when PRs are merged into the 'main' branch.
+# The workflow contains 3 jobs:
+# 1) setup_terraform: for setup terraform and checking available changes(create, update and delete cluster).
+# 2) destroy_cluster: it destroys terraform if existing cluster information is removed in config.yaml file.
+# 3) apply_cluster: this job is for creating or updating clusters based on config.yaml file
+
 name: 'Automated Terraform Cluster Setup and Cleanup'
 
 on:
