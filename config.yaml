@@ -1,4 +1,4 @@
-turnk8s-18:
+turnk8s-188:
   controlplane:
     cpu_cores: 2
     memory: 4096
@@ -7,4 +7,4 @@ turnk8s-18:
     count: 1
     cpu_cores: 2
     memory: 2048
-    disk_size: 22
+    disk_size: 20
