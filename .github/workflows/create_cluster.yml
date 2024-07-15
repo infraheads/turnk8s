@@ -21,6 +21,8 @@ env:
 jobs:
   setup_terraform:
     runs-on: self-hosted
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
     permissions:
       contents: read
       pull-requests: write
@@ -31,35 +33,32 @@ jobs:
       desired_clusters: ${{ steps.filter_clusters.outputs.desired_clusters }}
       removable_clusters: ${{ steps.filter_clusters.outputs.removable_clusters }}
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    # Setup Node.js on self-hosted runner for Terraform actions
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20.14.0
+      # Using composite actions for initializing Terraform
+      - name: Initialize Terraform
+        uses: ./.github/actions/initialize_terraform_composite_action
+        with:
+          working_directory: "terraform/infrastructure"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
 
-    # Using composite actions for initializing Terraform
-    - name: Initialize Terraform
-      uses: ./.github/actions/initialize_terraform_composite_action
-      with:
-        working_directory: "terraform/infrastructure"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
-
-    - name: Filter existing, desired and removable clusters
-      id: filter_clusters
-      run: |
-      # Get clusters from config.yaml file
-        desired_clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
-      # Get existing clusters 
-        existing_clusters=$(terraform workspace list | grep '\(-infrastructure\|-cluster\)$' | sed 's/-infrastructure$//;s/-cluster$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
-      # Filter all cluster must be removed
-        echo "removable_clusters=$(jq -n -c $existing_clusters-$desired_clusters)" >> $GITHUB_OUTPUT
-        echo "desired_clusters=$desired_clusters" >> $GITHUB_OUTPUT
+      - name: Filter existing, desired and removable clusters
+        id: filter_clusters
+        run: |
+          # Get clusters from config.yaml file
+               desired_clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
+          # Get existing clusters 
+               existing_clusters=$(terraform workspace list | grep '\(-infrastructure\|-cluster\)$' | sed 's/-infrastructure$//;s/-cluster$//' | uniq | grep -v '^$' | jq -R -s -c 'split("\n")[:-1] | map(ltrimstr("  "))')
+          # Filter all cluster must be removed
+               echo "removable_clusters=$(jq -n -c $existing_clusters-$desired_clusters)" >> $GITHUB_OUTPUT
+               echo "desired_clusters=$desired_clusters" >> $GITHUB_OUTPUT
 
   destroy_cluster:
     needs: setup_terraform
     if: ${{ needs.setup_terraform.outputs.removable_clusters != '[]' }}
     runs-on: self-hosted
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
     permissions:
       contents: read
       pull-requests: write
@@ -70,44 +69,34 @@ jobs:
       matrix:
         cluster: ${{ fromJSON(needs.setup_terraform.outputs.removable_clusters) }}
     steps:
-    # Setup Node.js on self-hosted runner for Terraform actions
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20.14.0
+      # Using composite actions for initializing Terraform
+      - name: Initialize Terraform
+        uses: ./.github/actions/initialize_terraform_composite_action
+        with:
+          working_directory: "terraform/infrastructure"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
+        env:
+          TF_VAR_cluster_name: ${{ matrix.cluster }}
 
-    # Using composite actions for initializing Terraform
-    - name: Initialize Terraform
-      uses: ./.github/actions/initialize_terraform_composite_action
-      with:
-        working_directory: "terraform/infrastructure"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
-      env:
-        TF_VAR_cluster_name: ${{ matrix.cluster }}
+      - name: Selecting Terraform Workspace
+        run: terraform workspace select ${{ matrix.cluster }}-infrastructure
 
-    - name: Selecting Terraform Workspace
-      run: terraform workspace select ${{ matrix.cluster }}-infrastructure
+      - name: Destroying Terraform
+        run: |
+          terraform destroy -auto-approve
 
-    - name: Destroying Terraform
-      run: |
-        terraform destroy -auto-approve
-
-    - name: Destroying Terraform Cloud Workspace
-      run: |
-        terraform workspace select default-ws
-        terraform workspace delete -force ${{ matrix.cluster }}-infrastructure
-        terraform workspace delete -force ${{ matrix.cluster }}-cluster
-
-    - name: Remove kube-config
-      run: |
-        if [ -f /opt/kubeconfig/${{ matrix.cluster }} ];
-        then
-          rm /opt/kubeconfig/${{ matrix.cluster }}
-        fi
+      - name: Destroying Terraform Cloud Workspace
+        run: |
+          terraform workspace select default-ws
+          terraform workspace delete -force ${{ matrix.cluster }}-infrastructure
+          terraform workspace delete -force ${{ matrix.cluster }}-cluster
 
   apply_cluster:
     needs: setup_terraform
     if: ${{ needs.setup_terraform.outputs.desired_clusters != '[]' }}
     runs-on: self-hosted
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
     permissions:
       contents: read
       pull-requests: write
@@ -118,43 +107,38 @@ jobs:
       matrix:
         cluster: ${{ fromJSON(needs.setup_terraform.outputs.desired_clusters) }}
     steps:
-    # Setup Node.js on self-hosted runner for Terraform actions
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20.14.0
+      # Using composite actions for applying cluster's infrastructure changes
+      - name: Infrastructure updates
+        uses: ./.github/actions/apply_terraform_composite_action
+        with:
+          workspace: ${{ matrix.cluster }}-infrastructure
+          plan_output: tfplan-${{ matrix.cluster }}-infrastructure
+          working_directory: "terraform/infrastructure"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
+        env:
+          TF_VAR_cluster_name: ${{ matrix.cluster }}
 
-    # Using composite actions for applying cluster's infrastructure changes
-    - name: Infrastructure updates
-      uses: ./.github/actions/apply_terraform_composite_action
-      with:
-        workspace: ${{ matrix.cluster }}-infrastructure
-        plan_output: tfplan-${{ matrix.cluster }}-infrastructure
-        working_directory: "terraform/infrastructure"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
-      env:
-        TF_VAR_cluster_name: ${{ matrix.cluster }}
+      # Using composite actions for applying cluster's applications and tools changes
+      - name: Cluster updates
+        uses: ./.github/actions/apply_terraform_composite_action
+        with:
+          workspace: ${{ matrix.cluster }}-cluster
+          plan_output: tfplan-${{ matrix.cluster }}-cluster
+          working_directory: "terraform/cluster"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
+        env:
+          TF_VAR_cluster_name: ${{ matrix.cluster }}
 
-    # Using composite actions for applying cluster's applications and tools changes
-    - name: Cluster updates
-      uses: ./.github/actions/apply_terraform_composite_action
-      with:
-        workspace: ${{ matrix.cluster }}-cluster
-        plan_output: tfplan-${{ matrix.cluster }}-cluster
-        working_directory: "terraform/cluster"
-        tf_api_token: ${{ secrets.TF_API_TOKEN }}
-      env:
-        TF_VAR_cluster_name: ${{ matrix.cluster }}
+      - name: Generating kube-config
+        uses: actions/upload-artifact@v4
+        with:
+          name: kube-config-${{ matrix.cluster }}
+          path: /opt/kubeconfig/${{ matrix.cluster }}
+          compression-level: 0
 
-    - name: Generating kube-config
-      uses: actions/upload-artifact@v4
-      with:
-        name: kube-config-${{ matrix.cluster }}
-        path: /opt/kubeconfig/${{ matrix.cluster }}
-        compression-level: 0
-
-    - name: Generating Markdown
-      run: |
-        echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
-        echo "Use the 'kubeconfig' file(s) to connect to the cluster, which is(are) attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
+      - name: Generating Markdown
+        run: |
+          echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ matrix.cluster }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
+          echo "Use the 'kubeconfig' file(s) to connect to the cluster, which is(are) attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
