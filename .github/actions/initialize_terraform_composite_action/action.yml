@@ -1,0 +1,29 @@
+name: "Initialize Terraform Composite Action"
+description: "A composite action to initialize terraform"
+inputs:
+  working_directory:
+    description: "Terraform Working Directory"
+    required: true
+  tf_api_token:
+    description: "Terraform API Token"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ inputs.tf_api_token }}
+        terraform_version: 1.7.5
+
+    - name: Configure Terraform Cache
+      run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Initializing Terraform
+      run: |
+        cd ${{ inputs.working_directory }}
+        terraform init
+      shell: bash
+      env:
+        TF_WORKSPACE: "default-ws"

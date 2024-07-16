@@ -1,0 +1,114 @@
+# This workflow is designed for creating clusters using "config.yaml" file to implement GitOps solution with the help of "turnk8s", which includes 2 jobs.
+# It is possible to create or delete clusters based on the creating PRs, by updating the "config.yaml" file. In simple words, it describes the existing clusters on the server.
+# The "config.yaml" file can be updated in the following ways:
+#   1) For testing new features, the config.yaml file should only contain one cluster description(referred to as "test-cluster"), which must be in the "turnk8s-<PR_NUMBER>" format.This can be done by creating a draft PR.
+#   2) For modifications(creating, updating, or deleting clusters), simply create a normal PR and describe the cluster(s) within the "config.yaml" file. The clusters must not start with the "turnk8s-" prefix.
+#      *Note: Modifications take effect upon merging normal PRs into the main branch.
+#   3) All clusters are destroyed if the "config.yaml" file is empty.
+# The above-described cases are checked in the first job, called "checking_yaml_correctness".
+# The second job, "apply_cluster" starts only if the PR is a draft. As a result of the workflow, the cluster's kube-config file will be found attached in the "Artifacts" section.
+# *Note: The "test-cluster" is destroyed after merging the draft PR into the main branch.
+
+name: 'Automated Cluster Deployment for Pull Requests'
+
+on:
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - 'config.yaml'
+
+env:
+  TF_CLOUD_ORGANIZATION: "infraheads"
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+  TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
+  TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+  TF_VAR_github_token: "${{ secrets.TOKEN_GITHUB }}"
+  TF_VAR_netris_controller_host: "${{ vars.NETRIS_CONTROLLER_HOST }}"
+  TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
+  TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
+  TF_VAR_argocd_admin_password: "${{ secrets.ARGOCD_ADMIN_PASSWORD }}"
+  TF_VAR_cluster_name: "turnk8s-${{ github.event.number }}"
+
+jobs:
+  checking_yaml_correctness:
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      # * In case of empty config.yaml destroys all clusters.
+      # * In case of "turnk8s" logic changes, we conventionally create a draft PR and rely on the type of PR in the pipeline's logic which must be in the "turnk8s-<PR_NUMBER>" format.
+      # * For cluster creation we use normal PRs. In such PRs, the added cluster name should not have "turnk8s-" prefix.
+      - name: Ensure validity of the config.yaml file
+        shell: bash
+        run: |
+          set -e
+          bash "${GITHUB_WORKSPACE}/scripts/validate_config_file.sh" "${GITHUB_WORKSPACE}/config.yaml"
+          clusters=$(yq e 'keys | .[]' ${GITHUB_WORKSPACE}/config.yaml | jq -R -s -c 'split("\n")[:-1]')
+          if [[ ${{ github.event.pull_request.draft }} == true ]] && [[ $(echo "$clusters" | jq -r '. | length') == 1 ]] && [[ $(echo "$clusters" | jq -r '.[0]') != "${{ env.TF_VAR_cluster_name }}" ]];
+          then
+            echo """
+             For draft PRs, the cluster name must be in the format \"turnk8s-<PR_NUMBER>\",
+             as it is assumed to be a test cluster for modifying logic and testing validations and features.
+             """
+            exit 1
+          elif [[ ${{ github.event.pull_request.draft }} == false ]] && [[ $(echo "$clusters" | jq -r '. | map(startswith("turnk8s-")) | any') == true ]];
+          then
+            echo """
+             For non-draft PRs, the cluster name must not be started with "turnk8s-" prefix,
+             as these clusters are not for testing and should follow a different naming convention.
+            """
+            exit 1
+          fi
+
+  apply_cluster:
+    needs: checking_yaml_correctness
+    if: ${{ github.event.pull_request.draft == true }}
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform"
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Using composite actions for applying cluster's infrastructure changes
+      - name: Infrastructure updates
+        uses: ./.github/actions/apply_terraform_composite_action
+        with:
+          workspace: ${{ env.TF_VAR_cluster_name }}-infrastructure
+          plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-infrastructure
+          working_directory: "terraform/infrastructure"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
+
+      # Using composite actions for applying cluster's applications and tools changes
+      - name: Cluster updates
+        uses: ./.github/actions/apply_terraform_composite_action
+        with:
+          workspace: ${{ env.TF_VAR_cluster_name }}-cluster
+          plan_output: tfplan-${{ env.TF_VAR_cluster_name }}-cluster
+          working_directory: "terraform/cluster"
+          tf_api_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Generating kube-config
+        uses: actions/upload-artifact@v4
+        with:
+          name: kube-config-${{ env.TF_VAR_cluster_name }}
+          path: /opt/kubeconfig/${{ env.TF_VAR_cluster_name }}
+          compression-level: 0
+
+      - name: Generating Markdown
+        run: |
+          echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ env.TF_VAR_cluster_name }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
+          echo "Use the 'kubeconfig' file to connect to the cluster, which is attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY

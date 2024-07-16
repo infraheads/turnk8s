@@ -19,7 +19,7 @@ resource "proxmox_vm_qemu" "worker" {
       scsi0 {
         disk {
           storage  = var.worker_disk_storage
-          size     = each.value.disc_size
+          size     = each.value.disk_size
           iothread = true
           asyncio  = "native"
         }
