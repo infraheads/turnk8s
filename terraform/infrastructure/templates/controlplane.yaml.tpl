@@ -8,6 +8,8 @@ machine:
             '*':
                 endpoints:
                     - http://${registry}
+    network:
+        hostname: ${node-name}
 cluster:
     apiServer:
         image: registry.k8s.io/kube-apiserver:${kubernetes-version}
