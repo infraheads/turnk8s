@@ -106,5 +106,5 @@ jobs:
           for cluster_name in ${{ steps.filter_clusters.outputs.desired_clusters }};
           do
             echo "[$cluster_name](https://github.com/infraheads/$cluster_name)" >> $GITHUB_STEP_SUMMARY
-          end
+          done
           echo "Use the 'kubeconfig' file(s) to connect to the cluster, which is(are) attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
