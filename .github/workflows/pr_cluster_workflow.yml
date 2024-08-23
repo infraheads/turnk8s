@@ -48,10 +48,12 @@ jobs:
     defaults:
       run:
         working-directory: "terraform/infrastructure"
+    outputs:
+      config_is_empty: ${{ steps.check_config.outputs.config_is_empty }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Checking ability to merge PR
+      - name: Checks if test config is empty
         id: check_config
         shell: bash
         run: |
@@ -136,11 +138,19 @@ jobs:
           echo "Push your Kubernetes service manifests to [GitHub URL](https://github.com/infraheads/${{ env.TF_VAR_cluster_name }}) to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
           echo "Use the 'kubeconfig' file to connect to the cluster, which is attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY
 
+  enable_merge_pr:
+    needs: pr_workflow
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
+    steps:
       # PR can be merged in case of empty test_config.yaml
-      - name: Enable PR merge
+      - name: Enable merge PR
         run: |
           set -e
-          if ${{ steps.check_config.outputs.config_is_empty == 'false' }}; then
+          if ${{ needs.pr_workflow.outputs.config_is_empty == 'false' }}; then
             echo "The test_config.yaml file is not empty. For merging PRs the file must be empty."
-            exit 1
           fi
