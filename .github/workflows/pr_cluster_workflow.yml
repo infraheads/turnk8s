@@ -153,4 +153,5 @@ jobs:
           set -e
           if ${{ needs.pr_workflow.outputs.config_is_empty == 'false' }}; then
             echo "The test_config.yaml file is not empty. For merging PRs the file must be empty."
+            exit 1
           fi
