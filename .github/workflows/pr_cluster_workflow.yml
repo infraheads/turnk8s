@@ -1,7 +1,7 @@
-# This workflow is designed for creating clusters using "config.yaml" and "test_config.yaml" files based on purpose to implement GitOps solution with the help of "turnk8s".
+# This workflow is designed for creating clusters using "config.yaml" and "test_config.yaml" files based on purpose of implementing GitOps solution with the help of "turnk8s".
 #
 # It is possible to create or delete clusters based on the creating PRs, by updating the configuration files.
-# The "config.yaml" file can be updated modifications(creating, updating, or deleting clusters) describing the cluster(s) within the "config.yaml" file. In simple words, it describes the existing clusters on the server.
+# The "config.yaml" file can be updated modifications(creating, updating, or deleting clusters) of cluster(s) described within the "config.yaml" file. In simple words, it describes the existing clusters on the server.
 #   **Note: The clusters must not start with the "turnk8s-" prefix.
 #           Modifications take effect upon merging a PRs into the main branch.
 #           All clusters are destroyed if the "config.yaml" file is empty.
@@ -11,7 +11,7 @@
 #   **Note: For merging a PR, test_config.yaml file must be empty.
 #           Test cluster is destroyed if "test_config.yaml" file is empty.
 #
-# **Attention: Both config.yaml and test_config.yaml files modification is not allowed.
+# **Attention: The workflow contains a job called "enable_merge_pr", which enable ability of merging PRs.
 # As a result of the workflow, the cluster's kube-config file will be found attached in the "Artifacts" section.
 
 

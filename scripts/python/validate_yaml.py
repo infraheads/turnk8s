@@ -30,7 +30,9 @@ def validate_cluster_names(cluster_config: dict, cluster_name: Optional[str]):
 
     if cluster_name:
         if cluster_name not in cluster_config:
-            raise SchemaError(f"Cluster name {cluster_name} must be match with \"turnk8s-<PR_NUMBER>\" format.")
+            raise SchemaError(f"Cluster name must be match with \"turnk8s-<PR_NUMBER>\" format.")
+        elif len(cluster_config) != 1:
+            raise SchemaError(f"Only one cluster must be described within test_config.yaml file.")
     else:
         for cluster_name, cluster_info in cluster_config.items():
             if cluster_name.startswith("turnk8s-"):
