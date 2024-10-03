@@ -5,6 +5,6 @@ turnk8s-18:
     disk_size: 10
   worker_nodes:
     count: 1
-    cpu_cores: 6
-    memory: 4096
+    cpu_cores: 4
+    memory: 6144
     disk_size: 20
