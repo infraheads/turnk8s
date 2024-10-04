@@ -23,6 +23,7 @@ on:
       - '*'
     paths:
       - 'test_config.yaml'
+      - 'config.yaml'
 
 env:
   TF_CLOUD_ORGANIZATION: "infraheads"
