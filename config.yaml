@@ -5,6 +5,6 @@ internal:
     disk_size: 10
   worker_nodes:
     count: 1
-    cpu_cores: 6
-    memory: 6144
+    cpu_cores: 4
+    memory: 4096
     disk_size: 20
