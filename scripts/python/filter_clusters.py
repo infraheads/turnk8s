@@ -20,7 +20,8 @@ def main():
     with open(args.yaml_path, 'r') as file:
         yaml_content = file.read()
 
-    loaded_yaml_content = yaml.safe_load(yaml_content)
+    loaded_yaml_content = yaml.safe_load(yaml_content) or dict()
+
     # Desired clusters must be applied
     desired_clusters = Counter([str(cluster) for cluster in loaded_yaml_content.keys()])
     # Existing clusters filtered from "terraform workspace list" and remove prefixes
