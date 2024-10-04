@@ -1,4 +1,4 @@
-internal:
+turnk8s-26:
   controlplane:
     cpu_cores: 2
     memory: 4096

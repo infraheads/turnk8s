@@ -40,10 +40,11 @@ resource "helm_release" "argocd-apps" {
   version    = var.app_of_apps_chart_version
   repository = var.app_of_apps_chart_repository
 
-  values = [file("${path.module}/app-of-apps.yaml")]
-
-  set {
-    name  = "applications[0].source.repoURL"
-    value = var.git_repository_ssh_url
-  }
+  values = [
+    templatefile("${path.module}/app-of-apps.yaml.tpl",
+      {
+        repoURL = var.git_repository_ssh_url
+      }
+    )
+  ]
 }
