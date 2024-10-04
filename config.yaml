@@ -7,4 +7,4 @@ internal:
     count: 1
     cpu_cores: 4
     memory: 4096
-    disk_size: 20
+    disk_size: 30
