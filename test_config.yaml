@@ -1,4 +1,4 @@
-testing:
+turnk8s-29:
   controlplane:
     cpu_cores: 2
     memory: 4096
