@@ -7,6 +7,7 @@ import argparse
 
 from typing import Optional
 from schema import Schema, And, Use, Or, SchemaError
+from schema import Optional as Op
 
 
 # Validate YAML empty lines
@@ -42,6 +43,7 @@ def validate_cluster_names(cluster_config: dict, cluster_name: Optional[str]):
 
 
 cluster_schema = {
+    Op("monitoring", default=False): bool,
     "controlplane": {
         "cpu_cores": Or(2, 4, 6, 8,
                         error="The number of CPU cores for the ControlPlane must be one of the following: 2, 4, 6, or 8."),

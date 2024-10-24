@@ -6,7 +6,6 @@
 ## Before using turnk8s
 
 You must fork turnk8s, set up a self-hosted GitHub runner inside your infrastructure, and create infrastructure-specific environmental variables. See the list of the repository's environmental variables.
-- ARGOCD_ADMIN_PASSWORD - Used as ArgoCD web interface password.
 - NETRIS_CONTROLLER_LOGIN - [Your Netris controller login](https://www.netris.io/docs/en/latest/tutorials/installing-netris-controller.html)
 - NETRIS_CONTROLLER_PASSWORD - [Your Netris controller password](https://www.netris.io/docs/en/latest/tutorials/installing-netris-controller.html)
 - PROXMOX_IP - Proxmox host IP address
@@ -25,9 +24,7 @@ Adhering to GitOps, you can manage all the clusters with the `config.yaml` confi
 
 ```yaml
 turnk8s-cluster:
-  versions:
-    talos: v1.7.1
-    k8s: v1.30.0
+  monitoring: true
   controlplane:
     cpu_cores: 2
     memory: 4096
@@ -46,8 +43,7 @@ Please note that you need Proxmox hosts deployed and available for your GitHub r
 
 Configuration parameters:
 * **the main key is the cluster name:(Required)** - A unique cluster name
-* **versions.talos:(Required)** - Talos Linux version: Supported versions are v1.7.1, v1.7.0, v1.6.7
-* **versions.k8s:(Required)** - Kubernetes version: Supported versions are v1.30.0, v1.29.3
+* **monitoring:(Optional)** - Enabled Prometheus and Grafana in the cluster: (by default it's disabled)
 * **controlplane.cpu_cores:(Required)** - controlplane node cores :(min 2)
 * **controlplane.memory:(Required)** - controlpalne node RAM (min 2048)
 * **controlplane.disk_size:(Required)** - controlplane node disk size:(min 10)
