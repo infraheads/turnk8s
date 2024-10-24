@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 talosctl gen config talos-proxmrox https://$CONTROLPLANE_IP:6443 -o _out --force
 talosctl apply-config -n $CONTROLPLANE_IP --insecure -f _out/controlplane.yaml

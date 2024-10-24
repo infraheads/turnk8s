@@ -1,10 +1,10 @@
-turnk8s-23:
+internal:
   controlplane:
     cpu_cores: 2
     memory: 4096
     disk_size: 10
   worker_nodes:
     count: 1
-    cpu_cores: 2
-    memory: 2048
-    disc_size: 15
+    cpu_cores: 4
+    memory: 4096
+    disk_size: 30

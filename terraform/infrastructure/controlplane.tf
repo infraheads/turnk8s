@@ -12,6 +12,7 @@ resource "proxmox_vm_qemu" "controlplane" {
   qemu_os = var.controlplane_qemu_os
   scsihw  = var.controlplane_scsihw
   memory  = each.value.controlplane.memory
+  onboot  = true
   agent   = 1
 
   disks {

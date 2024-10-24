@@ -1,5 +1,5 @@
 resource "proxmox_vm_qemu" "worker" {
-  for_each = { for idx, worker in local.worker : idx => worker }
+  for_each = { for idx, worker in local.workers : idx => worker }
 
   name        = "${var.cluster_name}-worker-${each.key}"
   target_node = local.proxmox_target_node
@@ -12,6 +12,7 @@ resource "proxmox_vm_qemu" "worker" {
   qemu_os = var.worker_qemu_os
   scsihw  = var.worker_scsihw
   memory  = each.value.memory
+  onboot  = true
   agent   = 1
 
   disks {
@@ -19,7 +20,7 @@ resource "proxmox_vm_qemu" "worker" {
       scsi0 {
         disk {
           storage  = var.worker_disk_storage
-          size     = each.value.disc_size
+          size     = each.value.disk_size
           iothread = true
           asyncio  = "native"
         }

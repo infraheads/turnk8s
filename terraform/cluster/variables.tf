@@ -1,5 +1,5 @@
 variable "cluster_name" {
-  description = "The name of the cluster."
+  description = "The cluster name exists in config file."
   type        = string
   default     = "turnk8s-cluster"
 }
@@ -30,11 +30,6 @@ variable "argocd_chart_version" {
 variable "argocd_chart_repository" {
   type    = string
   default = "https://argoproj.github.io/argo-helm"
-}
-
-variable "argocd_admin_password" {
-  description = "Encrypted password for Argocd admin"
-  type        = string
 }
 
 # ArgoCD Apps variables

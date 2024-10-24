@@ -8,3 +8,5 @@ machine:
             '*':
                 endpoints:
                     - http://${registry}
+    network:
+        hostname: ${node-name}

@@ -1,4 +1,5 @@
 resource "kubernetes_namespace" "monitoring" {
+  count = data.terraform_remote_state.infrastructure.outputs.enable_monitoring ? 1 : 0
   depends_on = [kubernetes_manifest.local-path-provisioner]
 
   metadata {
@@ -10,6 +11,7 @@ resource "kubernetes_namespace" "monitoring" {
 }
 
 resource "helm_release" "prometheus" {
+  count = data.terraform_remote_state.infrastructure.outputs.enable_monitoring ? 1 : 0
   depends_on = [kubernetes_namespace.monitoring]
 
   name             = var.prometheus_chart_name

@@ -1,0 +1,109 @@
+# This workflow is designed for creating clusters using "config.yaml" file to implement GitOps solution with the help of "turnk8s".
+# It is started to run when PRs are merged into the 'main' branch.
+
+
+name: 'Automated Terraform Cluster Setup and Cleanup'
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'config.yaml'
+
+env:
+  TF_CLOUD_ORGANIZATION: "infraheads"
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+  TF_VAR_proxmox_token_id: "${{ secrets.PROXMOX_TOKEN_ID }}"
+  TF_VAR_proxmox_token_secret: "${{ secrets.PROXMOX_TOKEN_SECRET }}"
+  TF_VAR_github_token: "${{ secrets.TOKEN_GITHUB }}"
+  TF_VAR_netris_controller_host: "${{ vars.NETRIS_CONTROLLER_HOST }}"
+  TF_VAR_netris_controller_login: "${{ secrets.NETRIS_CONTROLLER_LOGIN }}"
+  TF_VAR_netris_controller_password: "${{ secrets.NETRIS_CONTROLLER_PASSWORD }}"
+
+jobs:
+  main_workflow:
+    runs-on: self-hosted
+    container:
+      image: ${{ vars.RUNNER_IMAGE }}
+    permissions:
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: "terraform/infrastructure"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_version: 1.7.5
+
+      - name: Configure Terraform Cache
+        run: echo "TF_PLUGIN_CACHE_DIR=$HOME/.terraform.d/plugin-cache" >> "$GITHUB_ENV"
+
+      - name: Initializing Terraform
+        run: |
+          terraform init -upgrade
+        env:
+          TF_WORKSPACE: "default-ws"
+
+      - name: Filter desired and removable clusters
+        id: filter_clusters
+        run: |
+          filtered_clusters=$(python3 ${GITHUB_WORKSPACE}/scripts/python/filter_clusters.py --yaml-path=${GITHUB_WORKSPACE}/config.yaml --existing-clusters="$(terraform workspace list)")
+          # Get clusters from config.yaml file
+          echo "desired_clusters=$(echo $filtered_clusters | cut -d',' -f1)" >> $GITHUB_OUTPUT
+          # Get all cluster must be removed
+          echo "removable_clusters=$(echo $filtered_clusters | cut -d',' -f2)" >> $GITHUB_OUTPUT       
+
+      # Destroy clusters
+      - name: Destroy Clusters using Terraform
+        if: ${{ steps.filter_clusters.outputs.removable_clusters != '' }}
+        # change list to strings
+        run: |
+          bash ${GITHUB_WORKSPACE}/scripts/terraform/destroy.sh ${{ steps.filter_clusters.outputs.removable_clusters }}
+
+      # Apply cluster's infrastructure changes
+      - name: Infrastructure updates
+        if: ${{ steps.filter_clusters.outputs.desired_clusters != '' }}
+        run: |
+          bash ${GITHUB_WORKSPACE}/scripts/terraform/apply.sh infrastructure ${{ steps.filter_clusters.outputs.desired_clusters }}
+
+      - name: Initializing Terraform
+        if: ${{ steps.filter_clusters.outputs.desired_clusters != '' }}
+        run: |
+          cd ${GITHUB_WORKSPACE}/terraform/cluster
+          terraform init -upgrade
+        env:
+          TF_WORKSPACE: "default-ws"
+
+      # Apply cluster's applications and tools changes
+      - name: Cluster updates
+        if: ${{ steps.filter_clusters.outputs.desired_clusters != '' }}
+        run: |
+          cd ${GITHUB_WORKSPACE}/terraform/cluster
+          bash ${GITHUB_WORKSPACE}/scripts/terraform/apply.sh cluster ${{ steps.filter_clusters.outputs.desired_clusters }}
+
+      - name: Merging kube-configs into one file
+        run: bash ${GITHUB_WORKSPACE}/scripts/bash/merge_kubeconfigs.sh
+
+      - name: Generating kube-config artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubeconfig
+          path: ~/.kube/config
+          compression-level: 0
+
+      - name: Generating Markdown
+        run: |
+          echo "### turnk8s" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Push your Kubernetes service manifests to the following GitHub repositories to get them deployed on the cluster. :star_struck:" >> $GITHUB_STEP_SUMMARY
+          for cluster_name in ${{ steps.filter_clusters.outputs.desired_clusters }};
+          do
+            echo "[$cluster_name](https://github.com/infraheads/$cluster_name)" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "Use the 'kubeconfig' file(s) to connect to the cluster, which is(are) attached in 'Artifacts' section." >> $GITHUB_STEP_SUMMARY

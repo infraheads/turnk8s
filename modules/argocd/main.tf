@@ -11,11 +11,6 @@ resource "helm_release" "argocd" {
   values = [file("${path.module}/argocd.yaml")]
 
   set {
-    name  = "configs.secret.argocdServerAdminPassword"
-    value = var.argocd_admin_password
-  }
-
-  set {
     name  = "global.image.repository"
     value = "${var.registry}/argoproj/argocd"
   }

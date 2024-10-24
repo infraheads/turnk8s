@@ -29,6 +29,7 @@ data "talos_machine_configuration" "cp_mc" {
         talos-version      = var.talos_version,
         kubernetes-version = var.k8s_version,
         registry           = var.image_registry
+        node-name          = "${var.cluster_name}-cp"
       }
     )
   ]
@@ -63,6 +64,7 @@ data "talos_cluster_kubeconfig" "cp_ck" {
 
 # Generates a machine configuration for the worker (worker.yaml)
 data "talos_machine_configuration" "worker_mc" {
+  depends_on = [proxmox_vm_qemu.worker]
   for_each = local.clusters
 
   cluster_name       = data.talos_client_configuration.cp_cc[each.key].cluster_name
@@ -71,22 +73,37 @@ data "talos_machine_configuration" "worker_mc" {
   machine_secrets    = talos_machine_secrets.talos_secrets.machine_secrets
   kubernetes_version = var.k8s_version
   talos_version      = var.talos_version
-  config_patches     = [
+}
+
+# Applies machine configuration to the worker node
+resource "talos_machine_configuration_apply" "worker_mca" {
+  depends_on = [data.talos_machine_configuration.worker_mc]
+  for_each = { for idx, worker in local.workers : idx => worker }
+
+  client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
+  machine_configuration_input = data.talos_machine_configuration.worker_mc[var.cluster_name].machine_configuration
+  node                        = proxmox_vm_qemu.worker[each.key].default_ipv4_address
+
+  config_patches = [
     templatefile("${path.module}/templates/worker.yaml.tpl",
       {
         talos-version      = var.talos_version,
         kubernetes-version = var.k8s_version,
         registry           = var.image_registry
+        node-name = "${var.cluster_name}-wn-${each.key}"
       }
     )
   ]
 }
 
-# Applies machine configuration to the worker node
-resource "talos_machine_configuration_apply" "worker_mca" {
-  for_each = { for idx, worker in local.worker : idx => worker }
+data "talos_cluster_health" "cluster_health" {
+  depends_on           = [data.talos_cluster_kubeconfig.cp_ck]
 
-  client_configuration        = talos_machine_secrets.talos_secrets.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.worker_mc[var.cluster_name].machine_configuration
-  node                        = proxmox_vm_qemu.worker[each.key].default_ipv4_address
+  client_configuration = talos_machine_secrets.talos_secrets.client_configuration
+  control_plane_nodes  = [for controlplane in proxmox_vm_qemu.controlplane : controlplane.default_ipv4_address]
+  worker_nodes         = [for worker in proxmox_vm_qemu.worker : worker.default_ipv4_address]
+  endpoints            = [for controlplane in proxmox_vm_qemu.controlplane : controlplane.default_ipv4_address]
+  timeouts = {
+    read = "1h"
+  }
 }

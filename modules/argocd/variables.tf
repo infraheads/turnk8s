@@ -25,11 +25,6 @@ variable "argocd_chart_repository" {
   default = "https://argoproj.github.io/argo-helm"
 }
 
-variable "argocd_admin_password" {
-  description = "Encrypted password for admin user"
-  type        = string
-}
-
 # ArgoCD AppOfApps variables
 variable "app_of_apps_chart_name" {
   type    = string

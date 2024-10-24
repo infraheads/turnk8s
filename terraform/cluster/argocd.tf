@@ -8,7 +8,6 @@ module "argocd" {
   argocd_chart_name         = var.argocd_chart_name
   argocd_chart_version      = var.argocd_chart_version
   argocd_chart_repository   = var.argocd_chart_repository
-  argocd_admin_password     = var.argocd_admin_password
 
   app_of_apps_chart_name       = var.argocd_app_of_apps_chart_name
   app_of_apps_chart_version    = var.argocd_app_of_apps_chart_version
